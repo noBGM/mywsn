@@ -251,34 +251,34 @@ owerror_t schedule_addActiveSlot(
 
     uint8_t i;
     bool entry_found;
-    bool inBackupEntries;
+    // bool inBackupEntries;
 
-    bool needSwapEntries;
+    // bool needSwapEntries;
 
     INTERRUPT_DECLARATION();
     DISABLE_INTERRUPTS();
 
     // find an empty schedule entry container
     entry_found = FALSE;
-    inBackupEntries = FALSE;
+    // inBackupEntries = FALSE;
     slotContainer = &schedule_vars.scheduleBuf[0];
     do {
         if (slotContainer->type != CELLTYPE_OFF) {
-            if (slotContainer->slotOffset == slotOffset) {
-                // found one entry with same slotoffset in schedule, check if there is space in second entries
+            // if (slotContainer->slotOffset == slotOffset) {
+            //     // found one entry with same slotoffset in schedule, check if there is space in second entries
 
-                for (i = 0; i < MAXBACKUPSLOTS; i++) {
-                    if (slotContainer->backupEntries[i].type == CELLTYPE_OFF) {
-                        inBackupEntries = TRUE;
-                        backupEntry = &(slotContainer->backupEntries[i]);
-                        break;
-                    }
-                }
-                if (inBackupEntries) {
-                    entry_found = TRUE;
-                    break;
-                }
-            }
+            //     for (i = 0; i < MAXBACKUPSLOTS; i++) {
+            //         if (slotContainer->backupEntries[i].type == CELLTYPE_OFF) {
+            //             // inBackupEntries = TRUE;
+            //             backupEntry = &(slotContainer->backupEntries[i]);
+            //             break;
+            //         }
+            //     }
+            //     if (inBackupEntries) {
+            //         entry_found = TRUE;
+            //         break;
+            //     }
+            // }
             slotContainer++;
         } else {
             entry_found = TRUE;
@@ -293,78 +293,78 @@ owerror_t schedule_addActiveSlot(
         return E_FAIL;
     }
 
-    // assign the next slot pointer if it's allocated in backup entries
-    if (inBackupEntries) {
+    // // assign the next slot pointer if it's allocated in backup entries
+    // if (inBackupEntries) {
 
-        // the highest priority cell should be in schedule
-        // priority  high ----------------- low
-        //          autoTx  -> autoRx -> negotiated
+    //     // the highest priority cell should be in schedule
+    //     // priority  high ----------------- low
+    //     //          autoTx  -> autoRx -> negotiated
 
-        // check that whether need to swap the entries
-        needSwapEntries = FALSE;
-        if (slotContainer->isAutoCell) {
-            if (isAutoCell && slotContainer->type == CELLTYPE_RX && type == CELLTYPE_TX) {
-                // swap the entry of schedule and backup schedule
-                needSwapEntries = TRUE;
-            }
-        } else {
-            if (isAutoCell) {
-                // swap the entry of schedule and backup schedule
-                needSwapEntries = TRUE;
-            }
-        }
+    //     // check that whether need to swap the entries
+    //     needSwapEntries = FALSE;
+    //     if (slotContainer->isAutoCell) {
+    //         if (isAutoCell && slotContainer->type == CELLTYPE_RX && type == CELLTYPE_TX) {
+    //             // swap the entry of schedule and backup schedule
+    //             needSwapEntries = TRUE;
+    //         }
+    //     } else {
+    //         if (isAutoCell) {
+    //             // swap the entry of schedule and backup schedule
+    //             needSwapEntries = TRUE;
+    //         }
+    //     }
 
-        if (needSwapEntries) {
+    //     if (needSwapEntries) {
 
-            // backup current entries
-            backupEntry->type = slotContainer->type;
-            backupEntry->shared = slotContainer->shared;
-            backupEntry->channelOffset = slotContainer->channelOffset;
-            backupEntry->isAutoCell = slotContainer->isAutoCell;
+    //         // backup current entries
+    //         backupEntry->type = slotContainer->type;
+    //         backupEntry->shared = slotContainer->shared;
+    //         backupEntry->channelOffset = slotContainer->channelOffset;
+    //         backupEntry->isAutoCell = slotContainer->isAutoCell;
 
-            memcpy(&(backupEntry->neighbor), &(slotContainer->neighbor), sizeof(open_addr_t));
+    //         memcpy(&(backupEntry->neighbor), &(slotContainer->neighbor), sizeof(open_addr_t));
 
-            backupEntry->numRx = slotContainer->numRx;
-            backupEntry->numTx = slotContainer->numTx;
-            backupEntry->numTxACK = slotContainer->numTxACK;
-            backupEntry->lastUsedAsn.byte4 = slotContainer->lastUsedAsn.byte4;
-            backupEntry->lastUsedAsn.bytes0and1 = slotContainer->lastUsedAsn.bytes0and1;
-            backupEntry->lastUsedAsn.bytes0and1 = slotContainer->lastUsedAsn.bytes0and1;
-            backupEntry->next = slotContainer->next;
+    //         backupEntry->numRx = slotContainer->numRx;
+    //         backupEntry->numTx = slotContainer->numTx;
+    //         backupEntry->numTxACK = slotContainer->numTxACK;
+    //         backupEntry->lastUsedAsn.byte4 = slotContainer->lastUsedAsn.byte4;
+    //         backupEntry->lastUsedAsn.bytes0and1 = slotContainer->lastUsedAsn.bytes0and1;
+    //         backupEntry->lastUsedAsn.bytes0and1 = slotContainer->lastUsedAsn.bytes0and1;
+    //         backupEntry->next = slotContainer->next;
 
-            // add cell to schedule
-            slotContainer->type = type;
-            slotContainer->shared = shared;
-            slotContainer->channelOffset = channelOffset;
-            slotContainer->isAutoCell = isAutoCell;
-            memcpy(&(slotContainer->neighbor), neighbor, sizeof(open_addr_t));
+    //         // add cell to schedule
+    //         slotContainer->type = type;
+    //         slotContainer->shared = shared;
+    //         slotContainer->channelOffset = channelOffset;
+    //         slotContainer->isAutoCell = isAutoCell;
+    //         memcpy(&(slotContainer->neighbor), neighbor, sizeof(open_addr_t));
 
-            // fill that schedule entry with current asn
-            ieee154e_getAsn(&(asn[0]));
-            slotContainer->lastUsedAsn.bytes0and1 = 256 * asn[1] + asn[0];
-            slotContainer->lastUsedAsn.bytes2and3 = 256 * asn[3] + asn[2];
-            slotContainer->lastUsedAsn.byte4 = asn[4];
-        } else {
-            // add cell to backup schedule
+    //         // fill that schedule entry with current asn
+    //         ieee154e_getAsn(&(asn[0]));
+    //         slotContainer->lastUsedAsn.bytes0and1 = 256 * asn[1] + asn[0];
+    //         slotContainer->lastUsedAsn.bytes2and3 = 256 * asn[3] + asn[2];
+    //         slotContainer->lastUsedAsn.byte4 = asn[4];
+    //     } else {
+    //         // add cell to backup schedule
 
-            backupEntry->type = type;
-            backupEntry->shared = shared;
-            backupEntry->channelOffset = channelOffset;
-            backupEntry->isAutoCell = isAutoCell;
-            memcpy(&backupEntry->neighbor, neighbor, sizeof(open_addr_t));
+    //         backupEntry->type = type;
+    //         backupEntry->shared = shared;
+    //         backupEntry->channelOffset = channelOffset;
+    //         backupEntry->isAutoCell = isAutoCell;
+    //         memcpy(&backupEntry->neighbor, neighbor, sizeof(open_addr_t));
 
-            // fill that schedule entry with current asn
-            ieee154e_getAsn(&(asn[0]));
-            backupEntry->lastUsedAsn.bytes0and1 = 256 * asn[1] + asn[0];
-            backupEntry->lastUsedAsn.bytes2and3 = 256 * asn[3] + asn[2];
-            backupEntry->lastUsedAsn.byte4 = asn[4];
+    //         // fill that schedule entry with current asn
+    //         ieee154e_getAsn(&(asn[0]));
+    //         backupEntry->lastUsedAsn.bytes0and1 = 256 * asn[1] + asn[0];
+    //         backupEntry->lastUsedAsn.bytes2and3 = 256 * asn[3] + asn[2];
+    //         backupEntry->lastUsedAsn.byte4 = asn[4];
 
-            // use the same next point in schedule
-            backupEntry->next = slotContainer->next;
-        }
-        ENABLE_INTERRUPTS();
-        return E_SUCCESS;
-    }
+    //         // use the same next point in schedule
+    //         backupEntry->next = slotContainer->next;
+    //     }
+    //     ENABLE_INTERRUPTS();
+    //     return E_SUCCESS;
+    // }
 
     // fill that schedule entry with parameters passed
     slotContainer->slotOffset = slotOffset;
@@ -451,7 +451,7 @@ owerror_t schedule_addActiveSlot(
 owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, cellType_t type, bool isShared, open_addr_t *neighbor) {
     uint8_t i;
     bool entry_found;
-    bool isbackupEntry;
+    // bool isbackupEntry;
     backupEntry_t *backupEntry;
     uint8_t candidate_index;
 
@@ -463,7 +463,7 @@ owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, cellType_t type, bo
 
     // find the schedule entry
     entry_found = FALSE;
-    isbackupEntry = FALSE;
+    // isbackupEntry = FALSE;
     slotContainer = &schedule_vars.scheduleBuf[0];
     while (slotContainer <= &schedule_vars.scheduleBuf[schedule_vars.maxActiveSlots - 1]) {
         if (slotContainer->slotOffset == slotOffset) {
@@ -471,21 +471,21 @@ owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, cellType_t type, bo
                 entry_found = TRUE;
                 break;
             } else {
-                for (i = 0; i < MAXBACKUPSLOTS; i++) {
-                    if (
-                            packetfunctions_sameAddress(neighbor, &(slotContainer->backupEntries[i].neighbor)) &&
-                            type == slotContainer->backupEntries[i].type &&
-                            isShared == slotContainer->backupEntries[i].shared
-                            ) {
-                        isbackupEntry = TRUE;
-                        backupEntry = &(slotContainer->backupEntries[i]);
-                        break;
-                    }
-                }
-                if (isbackupEntry) {
-                    entry_found = TRUE;
-                    break;
-                }
+                // for (i = 0; i < MAXBACKUPSLOTS; i++) {
+                //     if (
+                //             packetfunctions_sameAddress(neighbor, &(slotContainer->backupEntries[i].neighbor)) &&
+                //             type == slotContainer->backupEntries[i].type &&
+                //             isShared == slotContainer->backupEntries[i].shared
+                //             ) {
+                //         isbackupEntry = TRUE;
+                //         backupEntry = &(slotContainer->backupEntries[i]);
+                //         break;
+                //     }
+                // }
+                // if (isbackupEntry) {
+                //     entry_found = TRUE;
+                //     break;
+                // }
             }
         }
         slotContainer++;
@@ -498,63 +498,63 @@ owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, cellType_t type, bo
         return E_FAIL;
     }
 
-    if (isbackupEntry) {
+    // if (isbackupEntry) {
 
-        // reset the backup entry
-        backupEntry->type = CELLTYPE_OFF;
-        backupEntry->shared = FALSE;
-        backupEntry->channelOffset = 0;
+    //     // reset the backup entry
+    //     backupEntry->type = CELLTYPE_OFF;
+    //     backupEntry->shared = FALSE;
+    //     backupEntry->channelOffset = 0;
 
-        backupEntry->neighbor.type = ADDR_NONE;
-        memset(&backupEntry->neighbor.addr_64b[0], 0x00, sizeof(backupEntry->neighbor.addr_64b));
+    //     backupEntry->neighbor.type = ADDR_NONE;
+    //     memset(&backupEntry->neighbor.addr_64b[0], 0x00, sizeof(backupEntry->neighbor.addr_64b));
 
-        backupEntry->lastUsedAsn.bytes0and1 = 0;
-        backupEntry->lastUsedAsn.bytes2and3 = 0;
-        backupEntry->lastUsedAsn.byte4 = 0;
-        backupEntry->next = NULL;
+    //     backupEntry->lastUsedAsn.bytes0and1 = 0;
+    //     backupEntry->lastUsedAsn.bytes2and3 = 0;
+    //     backupEntry->lastUsedAsn.byte4 = 0;
+    //     backupEntry->next = NULL;
 
-        ENABLE_INTERRUPTS();
-        return E_SUCCESS;
-    } else {
-        // looking for a cell in backup entries
-        candidate_index = MAXBACKUPSLOTS;
-        for (i = 0; i < MAXBACKUPSLOTS; i++) {
-            if (slotContainer->backupEntries[i].type != CELLTYPE_OFF) {
-                candidate_index = i;
-                if (
-                        slotContainer->backupEntries[i].isAutoCell &&
-                        slotContainer->backupEntries[i].type == CELLTYPE_TX
-                        ) {
-                    break;
-                }
-            }
-        }
+    //     ENABLE_INTERRUPTS();
+    //     return E_SUCCESS;
+    // } else {
+    //     // looking for a cell in backup entries
+    //     candidate_index = MAXBACKUPSLOTS;
+    //     for (i = 0; i < MAXBACKUPSLOTS; i++) {
+    //         if (slotContainer->backupEntries[i].type != CELLTYPE_OFF) {
+    //             candidate_index = i;
+    //             if (
+    //                     slotContainer->backupEntries[i].isAutoCell &&
+    //                     slotContainer->backupEntries[i].type == CELLTYPE_TX
+    //                     ) {
+    //                 break;
+    //             }
+    //         }
+    //     }
 
-        if (candidate_index < MAXBACKUPSLOTS) {
-            // move the backup entry to the schedule
-            slotContainer->type = slotContainer->backupEntries[candidate_index].type;
-            slotContainer->shared = slotContainer->backupEntries[candidate_index].shared;
-            slotContainer->channelOffset = slotContainer->backupEntries[candidate_index].channelOffset;
-            slotContainer->isAutoCell = slotContainer->backupEntries[candidate_index].isAutoCell;
-            memcpy(&slotContainer->neighbor, &(slotContainer->backupEntries[candidate_index].neighbor),
-                   sizeof(open_addr_t));
+    //     if (candidate_index < MAXBACKUPSLOTS) {
+    //         // move the backup entry to the schedule
+    //         slotContainer->type = slotContainer->backupEntries[candidate_index].type;
+    //         slotContainer->shared = slotContainer->backupEntries[candidate_index].shared;
+    //         slotContainer->channelOffset = slotContainer->backupEntries[candidate_index].channelOffset;
+    //         slotContainer->isAutoCell = slotContainer->backupEntries[candidate_index].isAutoCell;
+    //         memcpy(&slotContainer->neighbor, &(slotContainer->backupEntries[candidate_index].neighbor),
+    //                sizeof(open_addr_t));
 
-            slotContainer->numTx = slotContainer->backupEntries[candidate_index].numTx;
-            slotContainer->numRx = slotContainer->backupEntries[candidate_index].numRx;
-            slotContainer->numTxACK = slotContainer->backupEntries[candidate_index].numTxACK;
-            slotContainer->lastUsedAsn.bytes0and1 = slotContainer->backupEntries[candidate_index].lastUsedAsn.bytes0and1;
-            slotContainer->lastUsedAsn.bytes2and3 = slotContainer->backupEntries[candidate_index].lastUsedAsn.bytes2and3;
-            slotContainer->lastUsedAsn.byte4 = slotContainer->backupEntries[candidate_index].lastUsedAsn.byte4;
+    //         slotContainer->numTx = slotContainer->backupEntries[candidate_index].numTx;
+    //         slotContainer->numRx = slotContainer->backupEntries[candidate_index].numRx;
+    //         slotContainer->numTxACK = slotContainer->backupEntries[candidate_index].numTxACK;
+    //         slotContainer->lastUsedAsn.bytes0and1 = slotContainer->backupEntries[candidate_index].lastUsedAsn.bytes0and1;
+    //         slotContainer->lastUsedAsn.bytes2and3 = slotContainer->backupEntries[candidate_index].lastUsedAsn.bytes2and3;
+    //         slotContainer->lastUsedAsn.byte4 = slotContainer->backupEntries[candidate_index].lastUsedAsn.byte4;
 
-            // reset the backup entry
-            schedule_resetBackupEntry(&(slotContainer->backupEntries[candidate_index]));
+    //         // reset the backup entry
+    //         schedule_resetBackupEntry(&(slotContainer->backupEntries[candidate_index]));
 
-            ENABLE_INTERRUPTS();
-            return E_SUCCESS;
-        } else {
-            // no backup cell found
-        }
-    }
+    //         ENABLE_INTERRUPTS();
+    //         return E_SUCCESS;
+    //     } else {
+    //         // no backup cell found
+    //     }
+    // }
 
     // remove from linked list
     if (slotContainer->next == slotContainer) {

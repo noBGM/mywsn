@@ -131,7 +131,7 @@ void synchronizeAck(PORT_SIGNED_INT_WIDTH timeCorrection);
 void changeIsSync(bool newIsSync);
 
 // notifying upper layer
-void notif_sendDone(OpenQueueEntry_t *packetSent, owerror_t error);
+void notif_sendnotif_sendDone(OpenQueueEntry_t *packetSent, owerror_t error);
 
 void notif_receive(OpenQueueEntry_t *packetReceived);
 
@@ -199,7 +199,6 @@ void ieee154e_init(void) {
     radio_rfOn();
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    sctimer_set_actionCallback(isr_ieee154e_timer);
 #endif
     radio_setStartFrameCb(ieee154e_startOfFrame);
     radio_setEndFrameCb(ieee154e_endOfFrame);
@@ -617,8 +616,6 @@ port_INLINE void activity_synchronize_newSlot(void) {
         radio_setFrequency(ieee154e_vars.freq, FREQ_RX);
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-        sctimer_setCapture(ACTION_RX_SFD_DONE);
-        sctimer_setCapture(ACTION_RX_DONE);
 #endif
 
         // switch on the radio in Rx mode.
@@ -630,8 +627,6 @@ port_INLINE void activity_synchronize_newSlot(void) {
         ieee154e_stats.numTicsTotal += ieee154e_vars.slotDuration;
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-        sctimer_setCapture(ACTION_RX_SFD_DONE);
-        sctimer_setCapture(ACTION_RX_DONE);
 #endif
 
         if (ieee154e_vars.asn.bytes0and1 % (NUM_CHANNELS * EB_PORTION) == 0) {
@@ -667,8 +662,6 @@ port_INLINE void activity_synchronize_newSlot(void) {
         radio_setFrequency(ieee154e_vars.freq, FREQ_RX);
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-        sctimer_setCapture(ACTION_RX_SFD_DONE);
-        sctimer_setCapture(ACTION_RX_DONE);
 #endif
 
         // switch on the radio in Rx mode.
@@ -1056,43 +1049,6 @@ port_INLINE void activity_ti1ORri1(void) {
                 // record that I attempt to transmit this packet
                 ieee154e_vars.dataToSend->l2_numTxAttempts++;
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-                // 1. schedule timer for loading packet
-                sctimer_scheduleActionIn(ACTION_LOAD_PACKET, ieee154e_vars.startOfSlotReference+DURATION_tt1);
-                // prepare the packet for load packet action at DURATION_tt1
-                // make a local copy of the frame
-                packetfunctions_duplicatePacket(&ieee154e_vars.localCopyForTransmission, ieee154e_vars.dataToSend);
-
-                // check if packet needs to be encrypted/authenticated before transmission
-                if (ieee154e_vars.localCopyForTransmission.l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) { // security enabled
-                    // encrypt in a local copy
-                    if (IEEE802154_security_outgoingFrameSecurity(&ieee154e_vars.localCopyForTransmission) != E_SUCCESS) {
-                        // keep the frame in the OpenQueue in order to retry later
-                        endSlot(); // abort
-                        return;
-                    }
-                }
-
-                // add 2 CRC bytes only to the local copy as we end up here for each retransmission
-                OpenQueueEntry_t* copy;
-                localCopy = &ieee154e_vars.localCopyForTransmission;
-                if (packetfunctions_reserveFooter(&localCopy, 2) == E_FAIL){
-                    endSlot();
-                    return;
-                }
-                
-                // configure the radio to listen to the default synchronizing channel
-                radio_setFrequency(ieee154e_vars.freq, FREQ_TX);
-
-                // set the tx buffer address and length register.(packet is NOT loaded at this moment)
-                radio_loadPacket_prepare(ieee154e_vars.localCopyForTransmission.payload,
-                                     ieee154e_vars.localCopyForTransmission.length);
-                // 2. schedule timer for sending packet
-                sctimer_scheduleActionIn(ACTION_SEND_PACKET,  ieee154e_vars.startOfSlotReference+DURATION_tt2);
-                // 3. schedule timer radio tx watchdog
-                sctimer_scheduleActionIn(ACTION_SET_TIMEOUT, ieee154e_vars.startOfSlotReference+DURATION_tt3);
-                // 4. set capture interrupt for Tx SFD senddone and packet senddone
-                sctimer_setCapture(ACTION_TX_SFD_DONE);
-                sctimer_setCapture(ACTION_TX_SEND_DONE);
 #else
                 // arm tt1
                 opentimers_scheduleAbsolute(
@@ -1109,17 +1065,7 @@ port_INLINE void activity_ti1ORri1(void) {
             // change state
             changeState(S_RXDATAOFFSET);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-            // arm rt1
-            sctimer_scheduleActionIn(ACTION_RADIORX_ENABLE,ieee154e_vars.startOfSlotReference+DURATION_rt1);
-            radio_rxPacket_prepare();
-            // 2. schedule timer for starting
-            sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,  ieee154e_vars.startOfSlotReference+DURATION_rt2);
-            // 3.  set capture interrupt for Rx SFD done and receiving packet done
-            sctimer_setCapture(ACTION_RX_SFD_DONE);
-            sctimer_setCapture(ACTION_RX_DONE);
-        
-            // configure the radio to listen to the default synchronizing channel
-            radio_setFrequency(ieee154e_vars.freq, FREQ_RX);
+
 #else
             // arm rt1
             opentimers_scheduleAbsolute(
@@ -1242,8 +1188,6 @@ port_INLINE void activity_ti4(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_TXDATA);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel tt3
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel tt3
     opentimers_scheduleAbsolute(
@@ -1257,8 +1201,6 @@ port_INLINE void activity_ti4(PORT_TIMER_WIDTH capturedTime) {
     // record the captured time
     ieee154e_vars.lastCapturedTime = capturedTime;
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // arm tt4
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_tt4);
 #else
     // arm tt4
     opentimers_scheduleAbsolute(
@@ -1287,8 +1229,6 @@ port_INLINE void activity_ti5(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_RXACKOFFSET);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel tt4
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel tt4
     opentimers_scheduleAbsolute(
@@ -1315,19 +1255,6 @@ port_INLINE void activity_ti5(PORT_TIMER_WIDTH capturedTime) {
 
     if (listenForAck == TRUE) {
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-        // 1. schedule timer for enabling receiving
-        // arm tt5
-        sctimer_scheduleActionIn(ACTION_RADIORX_ENABLE,ieee154e_vars.startOfSlotReference+DURATION_tt5);
-        // set receiving buffer address (radio is NOT enabled at this moment)
-        radio_rxPacket_prepare();
-        // 2. schedule timer for starting receiving
-        sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_tt6);
-        // 3. set capture for receiving SFD and packet receiving done
-        sctimer_setCapture(ACTION_RX_SFD_DONE);
-        sctimer_setCapture(ACTION_RX_DONE);
-
-        // configure the radio to listen to the default synchronizing channel
-        radio_setFrequency(ieee154e_vars.freq, FREQ_RX);
 #else
         // arm tt5
         opentimers_scheduleAbsolute(
@@ -1355,8 +1282,6 @@ port_INLINE void activity_ti6(void) {
     // change state
     changeState(S_RXACKPREPARE);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // enable the radio in Rx mode. The radio is not actively listening yet.
-    radio_rxEnable_scum();
 #else
     // arm tt6
     opentimers_scheduleAbsolute(
@@ -1396,8 +1321,6 @@ port_INLINE void activity_ti7(void) {
     // start listening
     radio_rxNow();
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // arm tt7
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_tt7);
 #else
     // arm tt7
     opentimers_scheduleAbsolute(
@@ -1436,8 +1359,6 @@ port_INLINE void activity_ti8(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_RXACK);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel tt7
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel tt7
     opentimers_scheduleAbsolute(
@@ -1451,8 +1372,6 @@ port_INLINE void activity_ti8(PORT_TIMER_WIDTH capturedTime) {
     // record the captured time
     ieee154e_vars.lastCapturedTime = capturedTime;
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // arm tt8
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_tt8);
 #else
     // arm tt8
     opentimers_scheduleAbsolute(
@@ -1480,8 +1399,6 @@ port_INLINE void activity_ti9(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_TXPROC);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel tt8
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel tt8
     opentimers_scheduleAbsolute(
@@ -1588,7 +1505,7 @@ port_INLINE void activity_ti9(PORT_TIMER_WIDTH capturedTime) {
 
         if (idmanager_getIsDAGroot() == FALSE &&
             icmpv6rpl_isPreferredParent(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop))) {
-            synchronizeAck(ieee802514_header.timeCorrection);
+            synchronizeAck(ieee802514_header.timeCorrection);//策略：向父级同步
         }
 
         // inform schedule of successful transmission
@@ -1618,7 +1535,6 @@ port_INLINE void activity_ri2(void) {
     changeState(S_RXDATAPREPARE);
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    radio_rxEnable_scum();
 #else
     // arm rt2
     opentimers_scheduleAbsolute(
@@ -1657,8 +1573,6 @@ port_INLINE void activity_ri3(void) {
     // give the 'go' to receive
     radio_rxNow();
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // arm rt3
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_rt3);
 #else
     // arm rt3
     opentimers_scheduleAbsolute(
@@ -1682,8 +1596,6 @@ port_INLINE void activity_ri4(PORT_TIMER_WIDTH capturedTime) {
     changeState(S_RXDATA);
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel rt3
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel rt3
     opentimers_scheduleAbsolute(
@@ -1700,7 +1612,6 @@ port_INLINE void activity_ri4(PORT_TIMER_WIDTH capturedTime) {
     // record the captured time to sync
     ieee154e_vars.syncCapturedTime = capturedTime;
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_rt4);
 #else
     opentimers_scheduleAbsolute(
             ieee154e_vars.timerId,                            // timerId
@@ -1731,8 +1642,6 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_TXACKOFFSET);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel rt4
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel rt4
     opentimers_scheduleAbsolute(
@@ -1867,74 +1776,6 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
         // check if ack requested
         if (ieee802514_header.ackRequested == 1 && ieee154e_vars.isAckEnabled == TRUE) {
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-            // get a buffer to put the ack to send in
-            ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer(COMPONENT_IEEE802154E);
-            if (ieee154e_vars.ackToSend == NULL) {
-                // log the error
-                LOG_ERROR(COMPONENT_IEEE802154E, ERR_NO_FREE_PACKET_BUFFER, (errorparameter_t)0, (errorparameter_t)0);
-                // indicate we received a packet anyway (we don't want to loose any)
-                notif_receive(ieee154e_vars.dataReceived);
-                // free local variable
-                ieee154e_vars.dataReceived = NULL;
-                // abort
-                endSlot();
-                return;
-            }
-            // declare ownership over that packet
-            ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
-            ieee154e_vars.ackToSend->owner = COMPONENT_IEEE802154E;
-
-            // calculate the time timeCorrection (this is the time the sender is off w.r.t to this node. A negative number means
-            // the sender is too late.
-            ieee154e_vars.timeCorrection = (PORT_SIGNED_INT_WIDTH)(
-                    (PORT_SIGNED_INT_WIDTH) TsTxOffset - (PORT_SIGNED_INT_WIDTH) ieee154e_vars.syncCapturedTime);
-
-            // prepend the IEEE802.15.4 header to the ACK
-            ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;
-            ieee154e_vars.ackToSend->l2_dsn = ieee154e_vars.dataReceived->l2_dsn;
-
-            // To send ACK, we use the same security level (including NOSEC) and keys
-            // that were present in the DATA packet.
-            ieee154e_vars.ackToSend->l2_securityLevel = ieee154e_vars.dataReceived->l2_securityLevel;
-            ieee154e_vars.ackToSend->l2_keyIdMode = ieee154e_vars.dataReceived->l2_keyIdMode;
-            ieee154e_vars.ackToSend->l2_keyIndex = ieee154e_vars.dataReceived->l2_keyIndex;
-
-            ieee802154_prependHeader(
-                    ieee154e_vars.ackToSend,
-                    ieee154e_vars.ackToSend->l2_frameType,
-                    FALSE,//no payloadIE in ack
-                    ieee154e_vars.dataReceived->l2_dsn,
-                    &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
-            );
-
-            // if security is enabled, encrypt directly in OpenQueue as there are no retransmissions for ACKs
-            if (ieee154e_vars.ackToSend->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
-                if (IEEE802154_security_outgoingFrameSecurity(ieee154e_vars.ackToSend) != E_SUCCESS) {
-                    openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
-                    endSlot();
-                    return;
-                }
-            }
-            // space for 2-byte CRC
-            if (packetfunctions_reserveFooter(&ieee154e_vars.ackToSend, 2) == E_FAIL){
-                endSlot();
-                return;
-            }
-            // 1. schedule timer for loading packet
-            sctimer_scheduleActionIn(ACTION_LOAD_PACKET, ieee154e_vars.startOfSlotReference + DURATION_rt5);
-            // set tx buffer address and length to prepare loading packet (packet is NOT loaded at this moment)
-            radio_loadPacket_prepare(ieee154e_vars.ackToSend->payload,
-                                     ieee154e_vars.ackToSend->length);
-            sctimer_scheduleActionIn(ACTION_SEND_PACKET, ieee154e_vars.startOfSlotReference + DURATION_rt6);
-            // 2. schedule timer for radio tx watchdog
-            sctimer_scheduleActionIn(ACTION_SET_TIMEOUT, ieee154e_vars.startOfSlotReference + DURATION_rt7);
-            // 3. set capture for SFD senddone and Tx send done
-            sctimer_setCapture(ACTION_TX_SFD_DONE);
-            sctimer_setCapture(ACTION_TX_SEND_DONE);
-
-            // configure the radio to listen to the default synchronizing channel
-            radio_setFrequency(ieee154e_vars.freq, FREQ_TX);
-
 #else
             // arm rt5
             opentimers_scheduleAbsolute(
@@ -1946,16 +1787,17 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
             );
 #endif
         } else {
+
             // synchronize to the received packet if I'm not a DAGroot and this is my preferred parent or in case I'm
             // in the middle of the join process when parent is not yet selected or in case I don't have an autonomous
             // Tx cell cell to my parent yet
-
             if (
                     idmanager_getIsDAGroot() == FALSE &&
                     (
                             icmpv6rpl_isPreferredParent(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop)) ||
-                            IEEE802154_security_isConfigured() == FALSE ||
-                            icmpv6rpl_getPreferredParentEui64(&addressToWrite) == FALSE ||
+                            IEEE802154_security_isConfigured() == FALSE || 
+                            //join process when parent is not yet selected
+                            icmpv6rpl_getPreferredParentEui64(&addressToWrite) == FALSE  ||
                             (
                                     icmpv6rpl_getPreferredParentEui64(&addressToWrite) &&
                                     schedule_hasNegotiatedCellToNeighbor(&addressToWrite, CELLTYPE_TX) == FALSE
@@ -2068,7 +1910,6 @@ port_INLINE void activity_ri6(void) {
     // change state
     changeState(S_TXACKREADY);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    changeState(S_TXACKDELAY);
 #endif
 }
 
@@ -2113,8 +1954,6 @@ port_INLINE void activity_ri8(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_TXACK);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel rt7
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel rt7
     opentimers_scheduleAbsolute(
@@ -2128,8 +1967,6 @@ port_INLINE void activity_ri8(PORT_TIMER_WIDTH capturedTime) {
     // record the captured time
     ieee154e_vars.lastCapturedTime = capturedTime;
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // arm rt8
-    sctimer_scheduleActionIn(ACTION_SET_TIMEOUT,ieee154e_vars.startOfSlotReference+DURATION_rt8);
 #else
     // arm rt8
     opentimers_scheduleAbsolute(
@@ -2155,8 +1992,6 @@ port_INLINE void activity_ri9(PORT_TIMER_WIDTH capturedTime) {
     // change state
     changeState(S_RXPROC);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    // cancel rt8
-    sctimer_actionCancel(ACTION_SET_TIMEOUT);
 #else
     // cancel rt8
     opentimers_scheduleAbsolute(
@@ -2813,163 +2648,170 @@ Note that by the time this function is called, any received packet should alread
 Similarly, in a Tx slot, the sendDone function should already have been done. If this is not the case, this function
 will do that for you, but assume that something went wrong.
 */
-void endSlot(void) {
 
-    open_addr_t slotNeighbor;
-    open_addr_t parentAddress;
-    slotinfo_element_t info;
 
-    // turn off the radio
+// === 子函数实现 ===
+
+/**
+ * 处理无线电关闭、定时器清理和占空比计算
+ */
+static void handleRadioAndTiming(void) {
+    // 关闭无线电
     radio_rfOff();
 
-    // compute the duty cycle if radio has been turned on
+    // 计算本时隙的占空比
     if (ieee154e_vars.radioOnThisSlot == TRUE) {
         ieee154e_vars.radioOnTics += (sctimer_readCounter() - ieee154e_vars.radioOnInit);
     }
+
+    // 清理定时器
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
-    sctimer_actionCancel(ACTION_ALL_RADIOTIMER_INTERRUPT);
 #else
-    // clear any pending timer
     opentimers_scheduleAbsolute(
-            ieee154e_vars.timerId,                            // timerId
-            ieee154e_vars.slotDuration,                       // duration
-            ieee154e_vars.startOfSlotReference,               // reference
-            TIME_TICS,                                        // timetype
-            isr_ieee154e_newSlot                              // callback
+        ieee154e_vars.timerId,
+        ieee154e_vars.slotDuration,
+        ieee154e_vars.startOfSlotReference,
+        TIME_TICS,
+        isr_ieee154e_newSlot
     );
 #endif
-    // reset capturedTimes
+
+    // 重置捕获时间
     ieee154e_vars.lastCapturedTime = 0;
     ieee154e_vars.syncCapturedTime = 0;
 
-    // compute duty cycle.
-    ieee154e_stats.numTicsOn += ieee154e_vars.radioOnTics;//accumulate and tics the radio is on for that window
-    ieee154e_stats.numTicsTotal += ieee154e_vars.slotDuration;//increment total tics by timer period.
+    // 更新占空比统计
+    ieee154e_stats.numTicsOn += ieee154e_vars.radioOnTics;
+    ieee154e_stats.numTicsTotal += ieee154e_vars.slotDuration;
 
+    // 防止统计值溢出
     if (ieee154e_stats.numTicsTotal > DUTY_CYCLE_WINDOW_LIMIT) {
-        ieee154e_stats.numTicsTotal = ieee154e_stats.numTicsTotal >> 1;
-        ieee154e_stats.numTicsOn = ieee154e_stats.numTicsOn >> 1;
+        ieee154e_stats.numTicsTotal >>= 1;
+        ieee154e_stats.numTicsOn >>= 1;
     }
 
-    // clear vars for duty cycle on this slot
+    // 清理本时隙占空比变量
     ieee154e_vars.radioOnTics = 0;
     ieee154e_vars.radioOnThisSlot = FALSE;
+}
 
-    // clean up dataToSend
+/**
+ * 处理所有待处理的数据包和清理缓冲区
+ */
+static void handlePacketsAndBuffers(void) {
+    // 处理未完成的发送数据包
     if (ieee154e_vars.dataToSend != NULL) {
-        // if everything went well, dataToSend was set to NULL in ti9, getting here means transmit failed
-        // indicate Tx fail to schedule to update stats
         schedule_indicateTx(&ieee154e_vars.asn, FALSE);
-
-        //decrement transmits left counter
         ieee154e_vars.dataToSend->l2_retriesLeft--;
 
         if (ieee154e_vars.dataToSend->l2_retriesLeft == 0) {
-            // indicate tx fail if no more retries left
             notif_sendDone(ieee154e_vars.dataToSend, E_FAIL);
         } else {
-            // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E component
             ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
         }
-
-        // reset local variable
         ieee154e_vars.dataToSend = NULL;
     }
 
+    // 处理接收的数据包
+    if (ieee154e_vars.dataReceived != NULL) {
+        notif_receive(ieee154e_vars.dataReceived);
+        ieee154e_vars.dataReceived = NULL;
+    }
+
+    // 清理ACK缓冲区
+    if (ieee154e_vars.ackToSend != NULL) {
+        openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
+        ieee154e_vars.ackToSend = NULL;
+    }
+    if (ieee154e_vars.ackReceived != NULL) {
+        openqueue_freePacketBuffer(ieee154e_vars.ackReceived);
+        ieee154e_vars.ackReceived = NULL;
+    }
+}
+
+/**
+ * 处理cell统计和自动cell管理
+ */
+static void handleCellManagement(void) {
+    slotinfo_element_t info;
+    open_addr_t parentAddress;
+    open_addr_t slotNeighbor;
+    
+    // 处理RX cell统计
     schedule_getSlotInfo(ieee154e_vars.slotOffset, &info);
     if (info.link_type == CELLTYPE_RX) {
-        // update numcellelapsed and numcellused on Rx cell
-
-        // update numcellused if received something
         if (ieee154e_vars.receivedFrameFromParent) {
             if (icmpv6rpl_getPreferredParentEui64(&parentAddress)) {
-                msf_updateCellsUsed(
-                        &parentAddress,
-                        CELLTYPE_RX
-                );
+                msf_updateCellsUsed(&parentAddress, CELLTYPE_RX);
             }
         }
 
-        // update numcellelapsed if this is auto rx or rx cell to parent
         if (info.isAutoCell) {
             if (icmpv6rpl_getPreferredParentEui64(&parentAddress)) {
                 if (schedule_hasNegotiatedCellToNeighbor(&parentAddress, CELLTYPE_RX) == FALSE) {
-                    // adapt traffic on auto rx for downstream traffic
                     msf_updateCellsElapsed(&parentAddress, CELLTYPE_RX);
                 }
             }
         } else {
-            // update numelapsed on rx cell (msf will check whether it
-            // is to parent or not)
             msf_updateCellsElapsed(&info.address, CELLTYPE_RX);
         }
     }
     ieee154e_vars.receivedFrameFromParent = FALSE;
 
-    // clean up dataReceived
-    if (ieee154e_vars.dataReceived != NULL) {
-        // assume something went wrong. If everything went well, dataReceived
-        // would have been set to NULL in ri9.
-        // indicate  "received packet" to upper layer since we don't want to loose packets
-        notif_receive(ieee154e_vars.dataReceived);
-
-        // reset local variable
-        ieee154e_vars.dataReceived = NULL;
-    }
-
-    // clean up ackToSend
-    if (ieee154e_vars.ackToSend != NULL) {
-        // free ackToSend so corresponding RAM memory can be recycled
-        openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
-        // reset local variable
-        ieee154e_vars.ackToSend = NULL;
-    }
-
-    // clean up ackReceived
-    if (ieee154e_vars.ackReceived != NULL) {
-        // free ackReceived so corresponding RAM memory can be recycled
-        openqueue_freePacketBuffer(ieee154e_vars.ackReceived);
-        // reset local variable
-        ieee154e_vars.ackReceived = NULL;
-    }
-
-    // check if this is auto tx cell
-    if (
-            schedule_getSlottOffset() == ieee154e_vars.slotOffset &&
-            schedule_getIsAutoCell() && schedule_getType() == CELLTYPE_TX
-            ) {
-        // check if there are unicast packets to the neighbor of this slot if not, remove the cell
+    // 处理自动TX cell
+    if (schedule_getSlottOffset() == ieee154e_vars.slotOffset &&
+        schedule_getIsAutoCell() && schedule_getType() == CELLTYPE_TX) {
+        
         schedule_getNeighbor(&slotNeighbor);
         if (openqueue_macGetUnicastPacket(&slotNeighbor) == NULL) {
             schedule_removeActiveSlot(
-                    ieee154e_vars.slotOffset,
-                    CELLTYPE_TX,
-                    TRUE,
-                    &slotNeighbor
+                ieee154e_vars.slotOffset,
+                CELLTYPE_TX,
+                TRUE,
+                &slotNeighbor
             );
         }
     }
+}
 
-    // change state
+/**
+ * 处理时隙结束的最终操作
+ */
+static void finalizeSlot(void) {
+    // 改变状态
     changeState(S_SLEEP);
 
-    // arm serialInhibit timer (if we are still BEFORE DURATION_si)
+    // 设置串口禁止定时器
     if (ieee154e_vars.isSync == TRUE) {
         opentimers_scheduleAbsolute(
-                ieee154e_vars.serialInhibitTimerId,     // timerId
-                DURATION_si,                            // duration
-                ieee154e_vars.startOfSlotReference,     // reference
-                TIME_TICS,                              // timetype
-                isr_ieee154e_inhibitStart               // callback
+            ieee154e_vars.serialInhibitTimerId,
+            DURATION_si,
+            ieee154e_vars.startOfSlotReference,
+            TIME_TICS,
+            isr_ieee154e_inhibitStart
         );
     }
 
-    // resume serial activity (if we are still BEFORE DURATION_si)
-    if (DURATION_si + ieee154e_vars.startOfSlotReference - opentimers_getValue() < ieee154e_vars.slotDuration) {
-        openserial_inhibitStop(); // end of slot
+    // 恢复串口活动
+    if (DURATION_si + ieee154e_vars.startOfSlotReference - opentimers_getValue() < 
+        ieee154e_vars.slotDuration) {
+        openserial_inhibitStop();
     }
 }
 
 bool ieee154e_isSynch(void) {
     return ieee154e_vars.isSync;
+}
+void endSlot(void) {
+    // 1. 处理无线电和时间相关操作
+    handleRadioAndTiming();
+    
+    // 2. 处理数据包和缓冲区清理
+    handlePacketsAndBuffers();
+    
+    // 3. 处理cell管理和统计
+    handleCellManagement();
+    
+    // 4. 结束时隙操作
+    finalizeSlot();
 }

@@ -46,15 +46,29 @@
  </Memory4>
  <Project>
   <ProjectSessionItem path="nrf52840-dk"/>
-  <ProjectSessionItem path="nrf52840-dk;01bsp_leds"/>
-  <ProjectSessionItem path="nrf52840-dk;01bsp_radio"/>
-  <ProjectSessionItem path="nrf52840-dk;01bsp_radio;application"/>
+  <ProjectSessionItem path="nrf52840-dk;01bsp_bmx160"/>
+  <ProjectSessionItem path="nrf52840-dk;01bsp_sctimer"/>
+  <ProjectSessionItem path="nrf52840-dk;01bsp_sctimer;application"/>
+  <ProjectSessionItem path="nrf52840-dk;01bsp_uart"/>
+  <ProjectSessionItem path="nrf52840-dk;01bsp_uart;application"/>
   <ProjectSessionItem path="nrf52840-dk;03oos_macpong"/>
-  <ProjectSessionItem path="nrf52840-dk;03oos_macpong;kernel"/>
-  <ProjectSessionItem path="nrf52840-dk;03oos_macpong;kernel;openos"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_macpong;application"/>
   <ProjectSessionItem path="nrf52840-dk;03oos_macpong;openstack"/>
-  <ProjectSessionItem path="nrf52840-dk;03oos_macpong;openstack;02a-MAClow"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_macpong;openstack;02b-MAChigh"/>
   <ProjectSessionItem path="nrf52840-dk;03oos_openwsn"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;application"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;bsp"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;drivers"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;inc"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;openapps"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;openstack"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;openweb"/>
+  <ProjectSessionItem path="nrf52840-dk;03oos_openwsn;openweb;opencoap"/>
+  <ProjectSessionItem path="nrf52840-dk;04drv_usbd"/>
+  <ProjectSessionItem path="nrf52840-dk;04drv_usbd;application"/>
+  <ProjectSessionItem path="nrf52840-dk;04drv_usbd;bsp"/>
+  <ProjectSessionItem path="nrf52840-dk;04drv_usbd;drivers"/>
+  <ProjectSessionItem path="nrf52840-dk;04drv_usbd;inc"/>
  </Project>
  <Register1>
   <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/MSP;CPU/PSP;CPU/PRIMASK;CPU/BASEPRI;CPU/FAULTMASK;CPU/CONTROL;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="01bsp_leds" decimalNodes="" octalNodes="" unsignedNodes=""/>
@@ -121,27 +135,65 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="14" y="17" useTextEdit="1" path="../common/03oos_openwsn/03oos_openwsn.c" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="12" y="15" useTextEdit="1" path="../common/03oos_openwsn/03oos_openwsn.c" left="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="31" y="383" useTextEdit="1" path="../../inc/config.h" left="0" top="377" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="15" y="71" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/projects/common/03oos_openwsn/03oos_openwsn.c" path="../../openstack/openstack.c" left="0" top="50" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="6" y="83" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/03oos_macpong/03oos_macpong.c" path="../../openstack/openstack.c" left="0" top="68" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="34" y="360" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109/iota5109/openwsn1/openwsn-fw/openstack/openstack.c" path="../../drivers/common/opentimers.c" left="0" top="352" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="277" useTextEdit="1" path="P20TX.c" left="0" top="250" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="277" useTextEdit="1" path="P20TX.c" left="0" top="251" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="285" useTextEdit="1" path="P20RX.c" left="0" top="254" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="44" y="150" useTextEdit="1" path="01bsp_radio.c" left="0" top="119" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="44" y="150" useTextEdit="1" path="01bsp_radio.c" left="0" top="124" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="373" useTextEdit="1" path="02.c" left="0" top="342" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="89" useTextEdit="1" path="newUinject.c" left="0" top="86" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="31" useTextEdit="1" path="newUinject.h" left="0" top="1" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="5" y="38" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/nrf52840_dk/openapps.c" path="newUinject.c" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="31" useTextEdit="1" path="newUinject.h" left="0" top="5" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="30" y="23" useTextEdit="1" path="uinject.h" left="0" top="1" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="4" y="174" useTextEdit="1" path="uinject.c" left="0" top="153" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="91" useTextEdit="1" path="openapps.c" left="0" top="69" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="17" y="92" useTextEdit="1" path="openapps.c" left="0" top="82" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" path="openapps.h" left="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/projects/common/03oos_openwsn/03oos_openwsn.c" path="../../kernel/openos/scheduler.c" left="0" selected="1" top="42" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/projects/common/03oos_openwsn/03oos_openwsn.c" path="../../kernel/openos/scheduler.c" left="0" top="42" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="8" y="18" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/kernel/openos/scheduler.c" path="../../bsp/boards/nrf52840_dk/board_info.h" left="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="2307" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/openstack/openstack.c" path="../../openstack/02a-MAClow/IEEE802154E.c" left="0" top="2298" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="1" y="2816" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/openstack/openstack.c" path="../../openstack/02a-MAClow/IEEE802154E.c" left="0" top="2786" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="191" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/openstack/02a-MAClow/IEEE802154E.c" path="../../openstack/cross-layers/packetfunctions.c" left="0" top="183" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" path="Output/Debug/Obj/03oos_openwsn/03oos_openwsn.ld" left="0" top="395" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="281" useTextEdit="1" path="Output/Debug/Obj/01bsp_leds/01bsp_leds.ld" left="0" top="275" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" path="../common/03oos_macpong/03oos_macpong.c" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" path="Output/Debug/Obj/03oos_openwsn/03oos_openwsn.ld" left="0" top="380" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="36" y="10" useTextEdit="1" path="Output/Debug/Obj/01bsp_leds/01bsp_leds.ld" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="39" y="45" useTextEdit="1" path="../common/03oos_macpong/03oos_macpong.c" left="0" top="29" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="10" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/03oos_macpong/03oos_macpong.c" path="../../openstack/openstack.h" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="6" y="73" useTextEdit="1" path="../common/01bsp_uart/01bsp_uart.c" left="0" top="63" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="128" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/01bsp_uart/01bsp_uart.c" path="../../bsp/boards/nrf52840_dk/uart.c" left="0" top="103" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="12" y="49" useTextEdit="1" path="../common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.c" left="0" selected="1" top="37" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="16" y="8" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.c" path="../common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.h" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="322" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.h" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_class_base.h" left="0" top="302" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="208" useTextEdit="1" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd.h" left="0" top="202" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="862" useTextEdit="1" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd.c" left="0" top="853" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="47" y="11" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.h" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_cdc_acm.h" left="0" top="11" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="10" y="45" useTextEdit="1" path="../../drivers/common/usbd/nrfx_clock.h" left="0" top="41" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="14" y="44" useTextEdit="1" path="../../drivers/common/usbd/nrfx_usbd.h" left="0" top="36" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="65" useTextEdit="1" path="../../drivers/common/usbd/nrfx_clock.c" left="0" top="47" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="15" useTextEdit="1" path="../common/01bsp_sctimer/01bsp_sctimer.c" left="0" top="2" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="48" y="41" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/03oos_openwsn/03oos_openwsn.c" path="../../bsp/boards/nrf52840_dk/board.c" left="0" top="41" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="40" y="257" useTextEdit="1" path="../../drivers/common/usbd/nrf_drv_usbd.h" left="0" top="243" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="10" y="202" useTextEdit="1" path="../../drivers/common/usbd/nrfx_glue.h" left="0" top="188" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="13" y="56" useTextEdit="1" path="../../drivers/common/usbd/nrfx_irqs.h" left="0" top="35" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="20" y="49" useTextEdit="1" path="../../drivers/common/usbd/app_util.h" left="0" top="38" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="6" y="57" useTextEdit="1" path="../../drivers/common/usbd/app_util_platform.h" left="0" top="45" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="147" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/bsp/boards/nrf52840_dk/sdk/usbd/app_usbd.c" path="../../drivers/common/usbd/app_error.h" left="0" top="137" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="70" useTextEdit="1" path="../../drivers/common/usbd/sdk_errors.h" left="0" top="55" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="7" y="343" useTextEdit="1" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_request.h" left="0" top="329" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="58" useTextEdit="1" path="../../drivers/common/usbd/sdk_common.h" left="0" top="47" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="44" useTextEdit="1" path="../../drivers/common/usbd/app_error_weak.c" left="0" top="26" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="26" y="80" useTextEdit="1" path="../../drivers/common/usbd/nrf_log.h" left="0" top="68" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="47" useTextEdit="1" path="../../drivers/common/usbd/nrf_log_internal.h" left="0" top="29" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="26" y="56" useTextEdit="1" path="../../drivers/common/usbd/nrf_log_ctrl.h" left="0" top="42" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="50" useTextEdit="1" path="../../drivers/common/usbd/nrfx_atomic.c" left="0" top="35" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="9" useTextEdit="1" path="../../openstack/02b-MAChigh/mysf.c" left="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="26" y="982" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/04bsp_usbd_cdc_acm/04bsp_usbd_cdc_acm.c" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_cdc_acm.c" left="0" top="977" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="5" y="78" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/bsp/boards/nrf52840_dk/sdk/usbd/app_usbd.c" path="../../drivers/common/usbd/nordic_common.h" left="0" top="69" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="18" y="45" useTextEdit="1" path="../../drivers/common/usbd/nrf_drv_power.h" left="0" top="35" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="44" useTextEdit="1" path="../../drivers/common/usbd/nrfx_power.h" left="0" top="33" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="33" y="41" useTextEdit="1" path="../../bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_string_desc.c" left="0" top="31" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="17" y="110" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/bsp/boards/nrf52840_dk/sdk/usbd/app_usbd_request.h" path="../../drivers/common/usbd/nrf_assert.h" left="0" top="92" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="33" y="296" useTextEdit="1" path="../../drivers/common/usbd/nrf_drv_power.c" left="0" top="282" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="14" y="50" useTextEdit="1" path="../../drivers/common/usbd/nrf_drv_clock.c" left="0" top="87" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="11" y="127" useTextEdit="1" openedFrom="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/drivers/common/usbd/app_error.h" path="../../drivers/common/usbd/app_error.c" left="0" top="0" codecName="Default"/>
  </Files>
- <EMStudioWindow activeProject="01bsp_leds" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="D:/360MoveData/Users/Administrator/Desktop/???/???????-???/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/board.c&#xa;&#xa;D:/360MoveData/Users/Administrator/Desktop/???/???????-???/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/sdk/thumb_crt0.s&#xa;&#xa;D:/360MoveData/Users/Administrator/Desktop/HKUSTGZ/IOTA5109/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/sdk/thumb_crt0.s&#xa;" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <EMStudioWindow activeProject="04drv_usbd" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="D:/360MoveData/Users/Administrator/Desktop/???/???????-???/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/board.c&#xa;&#xa;D:/360MoveData/Users/Administrator/Desktop/???/???????-???/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/sdk/thumb_crt0.s&#xa;&#xa;D:/360MoveData/Users/Administrator/Desktop/HKUSTGZ/IOTA5109/iota5109/openwsn-fw/bsp/boards/nrf52840_dk/sdk/thumb_crt0.s&#xa;" fileDialogInitialDirectory="C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/common/04bsp_usbd_cdc_acm" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

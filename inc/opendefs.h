@@ -152,7 +152,7 @@ enum {
    COMPONENT_SIXTOP                    = 0x0c,
    COMPONENT_NEIGHBORS                 = 0x0d,
    COMPONENT_SCHEDULE                  = 0x0e,
-   COMPONENT_SIXTOP_RES                = 0x0f,
+   COMPONENT_SIXTOP_RES                = 0x0f, //response
    COMPONENT_MSF                       = 0x10,
    //IPHC
    COMPONENT_OPENBRIDGE                = 0x11,

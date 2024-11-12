@@ -1,0 +1,28 @@
+{
+    "files.associations": {
+        "eui64.h": "c",
+        "mysf_schedule.h": "c",
+        "04bsp_usbd_cdc_acm.h": "c",
+        "uart.h": "c",
+        "neighbors.h": "c",
+        "app_usbd.h": "c",
+        "03oos_mercator.h": "c",
+        "openhdlc.h": "c",
+        "nrf52840.h": "c",
+        "board.h": "c",
+        "toolchain_defs.h": "c",
+        "sctimer.h": "c",
+        "nrfx.h": "c",
+        "nrfx_glue.h": "c",
+        "nrfx_errors.h": "c",
+        "nrfx_common.h": "c",
+        "nrf.h": "c",
+        "nrf_peripherals.h": "c",
+        "stddef.h": "c",
+        "stdbool.h": "c",
+        "stdint.h": "c",
+        "nrfx_config.h": "c",
+        "apply_old_config.h": "c",
+        "app_usbd_cdc_acm.h": "c"
+    }
+}
