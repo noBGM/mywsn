@@ -97,3 +97,41 @@
 
 
 
+## USB传输
+
+### 背景：
+
+为了使**根节点**支持与拓扑中通过BLE可达到分别2Mbps速率的4个**组长节点**进行通信，至少需要让根节点有8Mbps的速率才能使得所有组长节点若以全速发送的信息不丢失。
+
+若使用uart传输，那么110kbps的速率肯定是无法满足的。
+
+而NRF52840支持USB2.0 full-speed协议，最高速率可达12Mbps。
+
+> high-speed模式可达480Mbps，但不支持。
+
+### 工具：
+
+1. nRF Connect for Desktop.exe
+
+   > 这是官方提供的一个跨平台开发辅助软件，我们主要使用了其串行终端程序用来调试USB收发。
+   >
+   > 下载地址：[nRF Connect for Desktop - Downloads - nordicsemi.com](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
+
+2. nRF5_SDK
+
+   > 官方sdk，我们使用了其example中完整的usbd_cdc_acm工程文件。
+   >
+   > 下载地址：[nRF5 SDK downloads - nordicsemi.com](https://www.nordicsemi.com/Products/Development-software/nRF5-SDK/Download#infotabs)
+
+### 连接方式：
+
+两根USB-typec数据线，一根连接电源端口和PC，一根连接USB端口和PC。
+
+### 性能：
+
+经测试最高可达900KB/s的净数据速率（不考虑协议开销）。
+
+
+
+
+

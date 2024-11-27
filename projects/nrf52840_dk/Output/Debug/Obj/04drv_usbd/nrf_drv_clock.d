@@ -66,6 +66,7 @@ Output/Debug/Obj/04drv_usbd/nrf_drv_clock.o: \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\sdk_macros.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_assert.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_section.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_strerror.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_internal.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_error.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_instance.h \

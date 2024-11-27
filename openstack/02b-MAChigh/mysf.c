@@ -156,50 +156,63 @@ schedule_entry_t* get_schedule_entry(uint16_t slotOffset) {
     return NULL;
 }
 
+#define ENTRIES_PER_GROUP    25    // 每组调度条目数
+#define BYTES_PER_ENTRY     2     // 每个调度条目占用字节数
+#define GROUP_DATA_SIZE     (ENTRIES_PER_GROUP * BYTES_PER_ENTRY)  // 每组数据大小
+
+// 存储各组调度数据的结构
+typedef struct {
+    uint8_t schedData[GROUP_DATA_SIZE];  // 50字节调度数据
+    bool isValid;                        // 数据是否有效
+} group_sched_data_t;
 
 // 处理调度命令
 void process_schedule_command(uint8_t* payload, uint16_t len) {
-    uint8_t cmd;
-    schedule_entry_t entry;
-    uint16_t slotOffset;
+    uint8_t groupId;
+    OpenQueueEntry_t* pkt;
     
     // 检查参数
-    if(payload == NULL || len < 1) {
+    if(payload == NULL || len < NUM_GROUPS * GROUP_DATA_SIZE) {
         return;
     }
     
-    cmd = payload[0];
-    switch(cmd) {
-        case CMD_ADD_SCHEDULE:
-            if(len < 7 + sizeof(open_addr_t)) {
-                return;
-            }
-            // 解析调度条目
-            entry.slotOffset = (payload[1] << 8) | payload[2];
-            entry.channelOffset = (payload[3] << 8) | payload[4];
-            entry.type = payload[5];
-            memcpy(&entry.neighbor, &payload[6], sizeof(open_addr_t));
-            
-            // 添加到调度表
-            add_schedule_entry(&entry);
-            break;
-            
-        case CMD_REMOVE_SCHEDULE:
-            if(len < 3) {
-                return;
-            }
-            // 解析时隙偏移
-            slotOffset = (payload[1] << 8) | payload[2];
-            remove_schedule_entry(slotOffset);
-            break;
-            
-        case CMD_CLEAR_SCHEDULE:
-            // 清空调度表
-            init_schedule_table();
-            break;
-            
-        default:
-            // 未知命令
-            break;
-    }
+    // 解析并存储每组的调度数据
+    for(groupId = 0; groupId < NUM_GROUPS; groupId++) {
+        // 复制该组的调度数据
+        memcpy(groupSchedData[groupId].schedData, 
+               payload + groupId * GROUP_DATA_SIZE, 
+               GROUP_DATA_SIZE);
+        groupSchedData[groupId].isValid = TRUE;
+        
+        // 为该组创建发送包
+        pkt = openqueue_getFreePacketBuffer(COMPONENT_MYSF);
+        if(pkt == NULL) {
+            log_error(ERR_NO_FREE_PACKET_BUFFER, "mysf");
+            return;
+        }
+        
+        // 设置包属性
+        pkt->creator = COMPONENT_MYSF;
+        pkt->owner = COMPONENT_MYSF;
+        pkt->l2_frameType = IEEE154_TYPE_DATA;
+        pkt->l2_nextORpreviousHop.type = ADDR_64B;
+        // 设置目标组长地址
+        memcpy(&pkt->l2_nextORpreviousHop.addr_64b, 
+               &groupLeaderAddrs[groupId],
+               sizeof(open_addr_t));
+        
+        // 放入发送队列
+        if(packetfunctions_reserveHeader(&pkt, GROUP_DATA_SIZE) != E_SUCCESS) {
+            openqueue_freePacketBuffer(pkt);
+            log_error(ERR_QUEUE_ADD_FAILED, "mysf");
+            return;
+        }
+        ((uint8_t *) pkt->payload)[0] = GROUP_SCHED_CMD;
+        // 复制调度数据到包
+        memcpy(pkt->payload + 1, 
+               groupSchedData[groupId].schedData, 
+               GROUP_DATA_SIZE);
+        
+    }    
+
 }

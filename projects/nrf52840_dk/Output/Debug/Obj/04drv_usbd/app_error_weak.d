@@ -41,11 +41,15 @@ Output/Debug/Obj/04drv_usbd/app_error_weak.o: \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\sdk_macros.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_assert.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_section.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_strerror.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_internal.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_instance.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_types.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_ctrl.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_ctrl_internal.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_backend_interface.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\app_util_platform.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_strerror.h
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_memobj.h \
+ C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/stdlib.h \
+ C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 6.30/include/stdlib.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_balloc.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\app_util_platform.h

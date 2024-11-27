@@ -1,17 +1,13 @@
 // schedule_manager.c
 
-
-// schedule_manager.c
-
 // 函数指针类型定义
 typedef void (*data_handler_t)(uint16_t srcAddr, uint8_t* data, uint8_t len);
 typedef void (*pc_cmd_handler_t)(uint8_t* data, uint8_t len);
 
 // 全局处理函数指针
-static data_handler_t g_dataHandler = NULL;
-static pc_cmd_handler_t g_pcCmdHandler = NULL;
+data_handler_t g_dataHandler = NULL;
+pc_cmd_handler_t g_pcCmdHandler = NULL;
 // -------- 根节点相关功能 --------
-// schedule_manager.c
 
 // 根节点与组长的固定链路配置
 static const root_leader_link_t ROOT_LEADER_LINKS[] = {
@@ -99,7 +95,7 @@ static void handlePCCommand(uint8_t* data, uint8_t len) {
 }
 
 void initRootSchedule(void) {
-    // 1. 初始化与PC的串口通信
+    // 1. 初始化与PC的串口通信。
     initPCConnection();
     
     // 2. 初始化与各组长的固定通信时隙
@@ -130,5 +126,52 @@ void initRootSchedule(void) {
     registerPCCommandHandler(handlePCCommand);
     
     // 5. 启动定时器，定期检查PC连接状态
-    startPCConnectionTimer();
+    //startPCConnectionTimer();
 }
+
+// 处理调度命令
+// void process_schedule_command(uint8_t* payload, uint16_t len) {
+//     uint8_t cmd;
+//     schedule_entry_t entry;
+//     uint16_t slotOffset;
+    
+//     // 检查参数
+//     if(payload == NULL || len < 1) {
+//         return;
+//     }
+    
+//     cmd = payload[0];
+//     switch(cmd) {
+//         case CMD_ADD_SCHEDULE:
+//             if(len < 7 + sizeof(open_addr_t)) {
+//                 return;
+//             }
+//             // 解析调度条目
+//             entry.slotOffset = (payload[1] << 8) | payload[2];
+//             entry.channelOffset = (payload[3] << 8) | payload[4];
+//             entry.type = payload[5];
+//             memcpy(&entry.neighbor, &payload[6], sizeof(open_addr_t));
+            
+//             // 添加到调度表
+//             add_schedule_entry(&entry);
+//             break;
+            
+//         case CMD_REMOVE_SCHEDULE:
+//             if(len < 3) {
+//                 return;
+//             }
+//             // 解析时隙偏移
+//             slotOffset = (payload[1] << 8) | payload[2];
+//             remove_schedule_entry(slotOffset);
+//             break;
+            
+//         case CMD_CLEAR_SCHEDULE:
+//             // 清空调度表
+//             init_schedule_table();
+//             break;
+            
+//         default:
+//             // 未知命令
+//             break;
+//     }
+// }

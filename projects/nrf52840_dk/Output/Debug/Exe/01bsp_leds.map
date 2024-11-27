@@ -104,8 +104,8 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 Output/Debug/Obj/01bsp_leds/adc.o
  .debug_macro   0x0000000000000000       0xfb Output/Debug/Obj/01bsp_leds/adc.o
  .debug_macro   0x0000000000000000       0x7e Output/Debug/Obj/01bsp_leds/adc.o
- .debug_line    0x0000000000000000      0x23d Output/Debug/Obj/01bsp_leds/adc.o
- .debug_str     0x0000000000000000     0x5f07 Output/Debug/Obj/01bsp_leds/adc.o
+ .debug_line    0x0000000000000000      0x22f Output/Debug/Obj/01bsp_leds/adc.o
+ .debug_str     0x0000000000000000     0x5eeb Output/Debug/Obj/01bsp_leds/adc.o
  .comment       0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/adc.o
  .ARM.attributes
                 0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/adc.o
@@ -213,8 +213,8 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x7e Output/Debug/Obj/01bsp_leds/cryptoengine.o
  .debug_macro   0x0000000000000000       0x34 Output/Debug/Obj/01bsp_leds/cryptoengine.o
  .debug_macro   0x0000000000000000       0x4c Output/Debug/Obj/01bsp_leds/cryptoengine.o
- .debug_line    0x0000000000000000      0x303 Output/Debug/Obj/01bsp_leds/cryptoengine.o
- .debug_str     0x0000000000000000     0x65a7 Output/Debug/Obj/01bsp_leds/cryptoengine.o
+ .debug_line    0x0000000000000000      0x2f5 Output/Debug/Obj/01bsp_leds/cryptoengine.o
+ .debug_str     0x0000000000000000     0x658b Output/Debug/Obj/01bsp_leds/cryptoengine.o
  .comment       0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/cryptoengine.o
  .ARM.attributes
                 0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/cryptoengine.o
@@ -333,8 +333,8 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x410 Output/Debug/Obj/01bsp_leds/eui64.o
  .debug_macro   0x0000000000000000    0x10d6b Output/Debug/Obj/01bsp_leds/eui64.o
  .debug_macro   0x0000000000000000       0x16 Output/Debug/Obj/01bsp_leds/eui64.o
- .debug_line    0x0000000000000000      0x32a Output/Debug/Obj/01bsp_leds/eui64.o
- .debug_str     0x0000000000000000    0x73282 Output/Debug/Obj/01bsp_leds/eui64.o
+ .debug_line    0x0000000000000000      0x31c Output/Debug/Obj/01bsp_leds/eui64.o
+ .debug_str     0x0000000000000000    0x73266 Output/Debug/Obj/01bsp_leds/eui64.o
  .comment       0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/eui64.o
  .ARM.attributes
                 0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/eui64.o
@@ -1436,8 +1436,8 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x25 Output/Debug/Obj/01bsp_leds/sensors.o
  .debug_macro   0x0000000000000000      0xb3e Output/Debug/Obj/01bsp_leds/sensors.o
  .debug_macro   0x0000000000000000       0xfd Output/Debug/Obj/01bsp_leds/sensors.o
- .debug_line    0x0000000000000000       0xb5 Output/Debug/Obj/01bsp_leds/sensors.o
- .debug_str     0x0000000000000000     0x31b4 Output/Debug/Obj/01bsp_leds/sensors.o
+ .debug_line    0x0000000000000000       0xa7 Output/Debug/Obj/01bsp_leds/sensors.o
+ .debug_str     0x0000000000000000     0x3198 Output/Debug/Obj/01bsp_leds/sensors.o
  .comment       0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/sensors.o
  .ARM.attributes
                 0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/sensors.o
@@ -1485,8 +1485,8 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xfb Output/Debug/Obj/01bsp_leds/spi.o
  .debug_macro   0x0000000000000000       0x7e Output/Debug/Obj/01bsp_leds/spi.o
  .debug_macro   0x0000000000000000       0x2e Output/Debug/Obj/01bsp_leds/spi.o
- .debug_line    0x0000000000000000      0x298 Output/Debug/Obj/01bsp_leds/spi.o
- .debug_str     0x0000000000000000     0x6119 Output/Debug/Obj/01bsp_leds/spi.o
+ .debug_line    0x0000000000000000      0x28a Output/Debug/Obj/01bsp_leds/spi.o
+ .debug_str     0x0000000000000000     0x60fd Output/Debug/Obj/01bsp_leds/spi.o
  .comment       0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/spi.o
  .ARM.attributes
                 0x0000000000000000       0x36 Output/Debug/Obj/01bsp_leds/spi.o
@@ -3165,7 +3165,7 @@ LOAD C:/Users/16603/AppData/Local/SEGGER/SEGGER Embedded Studio/v3/packages/libr
 LOAD C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 6.30/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi_balanced.a
 LOAD C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 6.30/lib/heapops_basic_v7em_little.a
 END GROUP
-OUTPUT(C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/openwsn1/openwsn-fw/projects/nrf52840_dk/Output/Debug/Exe/01bsp_leds.elf elf32-littlearm)
+OUTPUT(C:/Users/16603/Desktop/HKUSTGZ/IOTA5109-WSN/openwsnProj/mywsn/projects/nrf52840_dk/Output/Debug/Exe/01bsp_leds.elf elf32-littlearm)
 LOAD linker stubs
 
 .debug_frame    0x0000000000000000     0x296c
@@ -3329,45 +3329,45 @@ LOAD linker stubs
  .debug_macro   0x0000000000005912      0x171 Output/Debug/Obj/01bsp_leds/uart.o
  .debug_macro   0x0000000000005a83       0x1c Output/Debug/Obj/01bsp_leds/uart.o
 
-.debug_line     0x0000000000000000     0x67e4
- .debug_line    0x0000000000000000      0x38e Output/Debug/Obj/01bsp_leds/01bsp_leds.o
- .debug_line    0x000000000000038e      0x419 Output/Debug/Obj/01bsp_leds/board.o
- .debug_line    0x00000000000007a7      0x51b Output/Debug/Obj/01bsp_leds/debugpins.o
- .debug_line    0x0000000000000cc2      0x4c3 Output/Debug/Obj/01bsp_leds/i2c.o
- .debug_line    0x0000000000001185      0x5cd Output/Debug/Obj/01bsp_leds/leds.o
- .debug_line    0x0000000000001752      0x969 Output/Debug/Obj/01bsp_leds/radio.o
- .debug_line    0x00000000000020bb      0x495 Output/Debug/Obj/01bsp_leds/sctimer.o
- .debug_line    0x0000000000002550       0xbc Output/Debug/Obj/01bsp_leds/ses_startup_nrf52840.o
- .debug_line    0x000000000000260c       0xcc Output/Debug/Obj/01bsp_leds/ses_startup_nrf_common.o
- .debug_line    0x00000000000026d8     0x3a7e Output/Debug/Obj/01bsp_leds/system_nrf52840.o
- .debug_line    0x0000000000006156      0x19c Output/Debug/Obj/01bsp_leds/thumb_crt0.o
- .debug_line    0x00000000000062f2      0x4f2 Output/Debug/Obj/01bsp_leds/uart.o
+.debug_line     0x0000000000000000     0x673c
+ .debug_line    0x0000000000000000      0x380 Output/Debug/Obj/01bsp_leds/01bsp_leds.o
+ .debug_line    0x0000000000000380      0x40b Output/Debug/Obj/01bsp_leds/board.o
+ .debug_line    0x000000000000078b      0x50d Output/Debug/Obj/01bsp_leds/debugpins.o
+ .debug_line    0x0000000000000c98      0x4b5 Output/Debug/Obj/01bsp_leds/i2c.o
+ .debug_line    0x000000000000114d      0x5bf Output/Debug/Obj/01bsp_leds/leds.o
+ .debug_line    0x000000000000170c      0x95b Output/Debug/Obj/01bsp_leds/radio.o
+ .debug_line    0x0000000000002067      0x487 Output/Debug/Obj/01bsp_leds/sctimer.o
+ .debug_line    0x00000000000024ee       0xae Output/Debug/Obj/01bsp_leds/ses_startup_nrf52840.o
+ .debug_line    0x000000000000259c       0xbe Output/Debug/Obj/01bsp_leds/ses_startup_nrf_common.o
+ .debug_line    0x000000000000265a     0x3a70 Output/Debug/Obj/01bsp_leds/system_nrf52840.o
+ .debug_line    0x00000000000060ca      0x18e Output/Debug/Obj/01bsp_leds/thumb_crt0.o
+ .debug_line    0x0000000000006258      0x4e4 Output/Debug/Obj/01bsp_leds/uart.o
 
-.debug_str      0x0000000000000000    0x8319b
- .debug_str     0x0000000000000000     0xdca6 Output/Debug/Obj/01bsp_leds/01bsp_leds.o
-                                       0xdd40 (size before relaxing)
- .debug_str     0x000000000000dca6      0x504 Output/Debug/Obj/01bsp_leds/board.o
-                                       0xe02f (size before relaxing)
- .debug_str     0x000000000000e1aa      0x2f8 Output/Debug/Obj/01bsp_leds/debugpins.o
-                                       0xdd22 (size before relaxing)
- .debug_str     0x000000000000e4a2    0x6535c Output/Debug/Obj/01bsp_leds/i2c.o
-                                      0x73d74 (size before relaxing)
- .debug_str     0x00000000000737fe      0x28a Output/Debug/Obj/01bsp_leds/leds.o
-                                       0xdd2b (size before relaxing)
- .debug_str     0x0000000000073a88      0xbc0 Output/Debug/Obj/01bsp_leds/radio.o
-                                      0x74407 (size before relaxing)
- .debug_str     0x0000000000074648      0x1c6 Output/Debug/Obj/01bsp_leds/sctimer.o
-                                       0xe299 (size before relaxing)
- .debug_str     0x000000000007480e       0x8a Output/Debug/Obj/01bsp_leds/ses_startup_nrf52840.o
-                                         0xeb (size before relaxing)
- .debug_str     0x0000000000074898       0x80 Output/Debug/Obj/01bsp_leds/ses_startup_nrf_common.o
-                                         0xed (size before relaxing)
- .debug_str     0x0000000000074918     0xe4d9 Output/Debug/Obj/01bsp_leds/system_nrf52840.o
-                                      0x8197b (size before relaxing)
- .debug_str     0x0000000000082df1       0x74 Output/Debug/Obj/01bsp_leds/thumb_crt0.o
-                                         0xe1 (size before relaxing)
- .debug_str     0x0000000000082e65      0x336 Output/Debug/Obj/01bsp_leds/uart.o
-                                      0x73c0c (size before relaxing)
+.debug_str      0x0000000000000000    0x830e5
+ .debug_str     0x0000000000000000     0xdc8a Output/Debug/Obj/01bsp_leds/01bsp_leds.o
+                                       0xdd24 (size before relaxing)
+ .debug_str     0x000000000000dc8a      0x4f6 Output/Debug/Obj/01bsp_leds/board.o
+                                       0xe013 (size before relaxing)
+ .debug_str     0x000000000000e180      0x2ea Output/Debug/Obj/01bsp_leds/debugpins.o
+                                       0xdd06 (size before relaxing)
+ .debug_str     0x000000000000e46a    0x6534e Output/Debug/Obj/01bsp_leds/i2c.o
+                                      0x73d58 (size before relaxing)
+ .debug_str     0x00000000000737b8      0x27c Output/Debug/Obj/01bsp_leds/leds.o
+                                       0xdd0f (size before relaxing)
+ .debug_str     0x0000000000073a34      0xbb2 Output/Debug/Obj/01bsp_leds/radio.o
+                                      0x743eb (size before relaxing)
+ .debug_str     0x00000000000745e6      0x1b8 Output/Debug/Obj/01bsp_leds/sctimer.o
+                                       0xe27d (size before relaxing)
+ .debug_str     0x000000000007479e       0x7c Output/Debug/Obj/01bsp_leds/ses_startup_nrf52840.o
+                                         0xcf (size before relaxing)
+ .debug_str     0x000000000007481a       0x72 Output/Debug/Obj/01bsp_leds/ses_startup_nrf_common.o
+                                         0xd1 (size before relaxing)
+ .debug_str     0x000000000007488c     0xe4cb Output/Debug/Obj/01bsp_leds/system_nrf52840.o
+                                      0x8195f (size before relaxing)
+ .debug_str     0x0000000000082d57       0x66 Output/Debug/Obj/01bsp_leds/thumb_crt0.o
+                                         0xc5 (size before relaxing)
+ .debug_str     0x0000000000082dbd      0x328 Output/Debug/Obj/01bsp_leds/uart.o
+                                      0x73bf0 (size before relaxing)
 
 .comment        0x0000000000000000       0x35
  .comment       0x0000000000000000       0x35 Output/Debug/Obj/01bsp_leds/01bsp_leds.o

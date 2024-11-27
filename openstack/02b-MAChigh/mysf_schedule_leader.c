@@ -1,7 +1,6 @@
 // schedule_manager.c
 #include "mysf_schedule.h"
 
-// schedule_manager.c
 
 // IMU数据包类型定义
 typedef enum {
@@ -92,16 +91,62 @@ static void leaderDataHandler(uint16_t srcAddr, uint8_t* data, uint8_t len) {
     // 更新节点状态记录
     updateNodeStatus(srcAddr, dataType);
 }
-// 处理新的调度表
+// 处理新的调度表 
 static void handleScheduleUpdate(uint8_t* data, uint8_t len) {
-    // 1. 更新本地调度表
+    // 1. 更新本地调度表（即组长节点与根节点的通信、与组内节点的通信）
     updateLocalSchedule(data, len);
     
     // 2. 更新移动节点的时隙分配
     updateMobileSlots();
     
-    // 3. 广播更新给组内节点（如有必要）
+    // 3. 广播更新给组内节点
     broadcastScheduleUpdate();
+}
+
+void broadcastScheduleUpdate(void) {
+    OpenQueueEntry_t* pkt;
+    uint8_t slotsPerMember;
+    uint8_t totalSlots;
+    uint8_t* payload;
+    
+    // 获取空闲数据包缓冲
+    pkt = openqueue_getFreePacketBuffer(COMPONENT_SCHEDULE);
+    if(pkt == NULL) {
+        LOG_ERROR(COMPONENT_SCHEDULE, ERR_NO_FREE_PACKET_BUFFER, 
+                 (errorparameter_t)0, (errorparameter_t)0);
+        return;
+    }
+    
+    // 设置包属性
+    pkt->creator = COMPONENT_SCHEDULE;
+    pkt->owner = COMPONENT_SCHEDULE;
+    pkt->l2_frameType = IEEE154_TYPE_DATA;
+    
+    // 计算时隙分配
+    slotsPerMember = SLOTS_PER_MEMBER;  // 每个组员分配的时隙数
+    totalSlots = NUM_GROUP_MEMBERS * slotsPerMember;  // 总时隙数
+    
+    // 分配payload空间: 1字节(N) + totalSlots字节
+    packetfunctions_reserveHeaderSize(pkt, 1 + totalSlots);
+    payload = pkt->payload;
+    
+    // 设置第一个字节为每个组员的时隙数
+    payload[0] = slotsPerMember;
+    
+    // 填充时隙资源
+    // 这里假设时隙资源已经在schedule_vars.slotResources中准备好
+    memcpy(&payload[1], schedule_vars.slotResources, totalSlots);
+    
+    // 设置广播地址
+    packetfunctions_setAddress(&(pkt->l2_nextORpreviousHop),
+                              ADDR_BROADCAST,
+                              NULL);
+    
+    // 发送数据包
+    if(sixtop_send(pkt) != E_SUCCESS) {
+        openqueue_freePacketBuffer(pkt);
+        return;
+    }
 }
 
 // 处理配置更新
@@ -311,24 +356,6 @@ static void initLeaderSchedule(void) {
     
     registerPCCommandHandler(NULL);
 }
-
-// -------- 组员节点相关功能 --------
-static void initMemberSchedule(void) {
-    // 获取预设的组长ID
-    uint16_t leaderId = getPresetLeader();
-    
-    // 等待对应组长的beacon
-    // 处理组长发送的调度表，赋值给本地全局变量myGroupResource
-    waitForLeaderBeacon();
-    
-    // 获取本组内所有节点的固定时隙配置
-    // 在根节点分配给本组组长的时隙资源中，通过自身ID获取对应的份配置
-    scheduleEntries = getMySlots(ID);
-
-    // 将调度表条目添加到本地调度表,批量调用schedule_addActiveSlot
-    addScheduleEntries(scheduleEntries);
-}
-
 
 
 // -------- 组长节点的资源管理 --------

@@ -1,6 +1,6 @@
 Output/Debug/Obj/01bsp_leds/spi.o: \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\openwsn1\openwsn-fw\bsp\boards\nrf52840_dk\spi.c \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\openwsn1\openwsn-fw\bsp\boards\nrf52840_dk\board_info.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\spi.c \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\board_info.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/stdint.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/__config \
  C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 6.30/include/stdint.h \

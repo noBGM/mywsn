@@ -1,7 +1,7 @@
 Output/Debug/Obj/04drv_usbd/app_usbd_string_desc.o: \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_string_desc.c \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_string_desc.c \
  ../../drivers/common/usbd/sdk_config.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_string_desc.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_string_desc.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/stdint.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/__config \
  C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 6.30/include/stdint.h \
@@ -37,7 +37,7 @@ Output/Debug/Obj/04drv_usbd/app_usbd_string_desc.o: \
  ../../bsp/boards/nrf52840_dk/sdk/compiler_abstraction.h \
  ../../drivers/common/usbd/sdk_macros.h \
  ../../drivers/common/usbd/nrf_assert.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd.h \
  ../../drivers/common/usbd/nrf_drv_usbd.h \
  ../../drivers/common/usbd/nrfx.h ../../drivers/common/usbd/nrfx_config.h \
  ../../drivers/common/usbd/nrfx_common.h \
@@ -68,12 +68,12 @@ Output/Debug/Obj/04drv_usbd/app_usbd_string_desc.o: \
  ../../bsp/boards/nrf52840_dk/sdk/nrf52_erratas.h \
  ../../bsp/boards/nrf52840_dk/sdk/nrf53_erratas.h \
  ../../bsp/boards/nrf52840_dk/sdk/nrf91_erratas.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_types.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_request.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_descriptor.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_langid.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_class_base.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_types.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_request.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_descriptor.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_langid.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_class_base.h \
  ../../drivers/common/usbd/nrf_assert.h \
  ../../drivers/common/usbd/app_util.h \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\usbd\app_usbd_core.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\usbd\app_usbd_core.h \
  ../../drivers/common/usbd/utf.h

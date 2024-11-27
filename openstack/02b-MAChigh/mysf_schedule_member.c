@@ -1,23 +1,7 @@
-static void initMemberSchedule(void) {
-    // 获取预设的组长ID
-    uint16_t leaderId = getPresetLeader();
-    
-    // 等待对应组长的beacon
-    // 处理组长发送的调度表，赋值给本地全局变量myGroupResource
-    waitForLeaderBeacon();
-    
-    // 获取本组内所有节点的固定时隙配置
-    // 在根节点分配给本组组长的时隙资源中，通过自身ID获取对应的份配置
-    scheduleEntries = getMySlots(ID);
-
-    // 将调度表条目添加到本地调度表,批量调用schedule_addActiveSlot
-    addScheduleEntries(scheduleEntries);
-}
-
 static void waitForLeaderBeacon(void) {
 
     while(){
-        wfe();
+        __WFE();
     }
 
 }
@@ -46,34 +30,46 @@ typedef struct {
 static group_resource_t myGroupResource;
 static uint16_t myLeaderId;
 
+// 共享时隙配置
+#define SHARED_SLOT_OFFSET    0x00    // 共享时隙偏移量
+#define SHARED_CHANNEL_OFFSET 0x00    // 共享信道偏移量
+
+static uint16_t currentLeaderId;  // 当前组长ID
+static bool receivedSchedule;     // 是否收到调度表标志
+
 static void initMemberSchedule(void) {
-    // 1. 获取预设的组长ID（基于自身ID）
-    myLeaderId = getPresetLeader();
+    open_addr_t leaderAddr;
     
-    // 2. 等待并处理组长的beacon
-    // 等待对应组长的beacon
-    // 处理组长发送的调度表，赋值给本地全局变量myGroupResource
-    if (waitForLeaderBeacon() != E_SUCCESS) {
-        // 等待超时，进入错误处理
-        handleSyncFailed();
-        return;
+    // 获取预设的组长ID
+    currentLeaderId = getPresetLeader();
+    receivedSchedule = FALSE;
+    
+    // 配置组长地址
+    leaderAddr.type = ADDR_64B;
+    getLeaderAddr(currentLeaderId, &leaderAddr);
+    
+    // 添加共享接收时隙
+    schedule_addActiveSlot(
+        SHARED_SLOT_OFFSET,        // 时隙偏移
+        CELLTYPE_RX,              // 接收类型
+        TRUE,                     // 共享时隙
+        TRUE,                     // 自动时隙
+        SHARED_CHANNEL_OFFSET,    // 信道偏移
+        &leaderAddr              // 组长地址
+    );
+    
+    // 等待组长广播调度表
+    while(!receivedSchedule) {
+        // 可以添加超时机制
+        if(waitForSchedule(SCHEDULE_TIMEOUT_MS) == FALSE) {
+            // 超时处理
+            LOG_ERROR(COMPONENT_SCHEDULE, ERR_SCHEDULE_TIMEOUT, 
+                     (errorparameter_t)currentLeaderId, 
+                     (errorparameter_t)0);
+            // 可以选择重试或其他处理
+            continue;
+        }
     }
-    
-    // 获取本组内所有节点的固定时隙配置
-    // 在根节点分配给本组组长的时隙资源中，通过自身ID获取对应的份配置
-    // 3. 获取自己的时隙配置
-    slot_config_t* mySlots = getMySlots(myId);
-    if (mySlots == NULL) {
-        // 获取配置失败，进入错误处理
-        handleConfigFailed();
-        return;
-    }
-    
-    // 4. 添加调度表条目(将调度表条目添加到本地调度表,批量调用schedule_addActiveSlot)
-    addScheduleEntries(mySlots);
-    
-    // 5. 启动定期状态检查
-    startStatusCheck();
 }
 
 // 等待并处理组长beacon
@@ -165,4 +161,46 @@ static void checkNodeStatus(opentimer_id_t timerId) {
     
     // 更新本地统计信息
     updateStatistics();
+}
+
+// 组员接收调度更新的处理函数
+void handleScheduleUpdate(uint8_t* payload, uint8_t len) {
+    uint8_t slotsPerMember;
+    uint8_t myIndex;
+    uint8_t i;
+    
+    if(len < 2) {  // 至少需要N和一个时隙
+        return;
+    }
+    
+    // 获取每个组员的时隙数
+    slotsPerMember = payload[0];
+    
+    // 获取自己的组内索引
+    myIndex = getMyGroupIndex();
+    
+    // 计算自己的时隙起始位置
+    uint8_t mySlotStartIndex = 1 + (myIndex * slotsPerMember);
+    
+    // 确保不越界
+    if(mySlotStartIndex + slotsPerMember > len) {
+        return;
+    }
+    
+    // 更新自己的时隙
+    for(i = 0; i < slotsPerMember; i++) {
+        uint8_t slotoffset = payload[mySlotStartIndex + i];
+        i++;
+        uint8_t channelOffset = payload[mySlotStartIndex + i] >> 2;
+        uint8_t type = payload[mySlotStartIndex + i] & 0x03;
+
+        schedule_addActiveSlot(
+            slotOffset,          // 时隙偏移
+            type,                // 接收类型
+            FALSE,               // 非共享
+            FALSE,               // 非自动
+            channelOffset,       // 信道偏移
+            &leaderAddr          // 组长地址
+        );
+    }
 }

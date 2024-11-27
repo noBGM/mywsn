@@ -1,5 +1,5 @@
 Output/Debug/Obj/01bsp_leds/01bsp_leds.o: \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\openwsn1\openwsn-fw\projects\common\01bsp_leds\01bsp_leds.c \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\projects\common\01bsp_leds\01bsp_leds.c \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/stdint.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/__config \
  C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 6.30/include/stdint.h \

@@ -611,6 +611,9 @@ void openserial_handleRxFrame() {
         case SERFRAME_PC2MOTE_TRIGGERSERIALECHO:
             openserial_handleEcho(&openserial_vars.inputBuf[1], openserial_vars.inputBufFillLevel - 1);
             break;
+        case SERFRAME_PC2MOTE_SCHEDULE:
+            process_schedule_command(&openserial_vars.inputBuf[1], openserial_vars.inputBufFillLevel - 1);
+            break;
     }
 }
 

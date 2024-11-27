@@ -41,4 +41,5 @@ Output/Debug/Obj/04drv_usbd/nrf_atfifo.o: \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\sdk_common.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\sdk_os.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\sdk_macros.h \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_strerror.h \
  C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\drivers\common\usbd\nrf_log_internal.h

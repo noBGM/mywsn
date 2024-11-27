@@ -59,6 +59,7 @@ Output/Debug/Obj/04drv_usbd/nrfx_clock.o: \
  ../../drivers/common/usbd/sdk_os.h \
  ../../drivers/common/usbd/sdk_macros.h \
  ../../drivers/common/usbd/nrf_section.h \
+ ../../drivers/common/usbd/nrf_strerror.h \
  ../../drivers/common/usbd/nrf_log_internal.h \
  ../../drivers/common/usbd/nrf_log_instance.h \
  ../../drivers/common/usbd/nrf_log_types.h

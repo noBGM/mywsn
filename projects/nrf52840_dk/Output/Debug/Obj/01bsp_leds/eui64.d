@@ -1,5 +1,5 @@
 Output/Debug/Obj/01bsp_leds/eui64.o: \
- C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\openwsn1\openwsn-fw\bsp\boards\nrf52840_dk\eui64.c \
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\eui64.c \
  ../../bsp/boards/nrf52840_dk/sdk/nrf52840.h \
  ../../bsp/boards/nrf52840_dk/sdk/core_cm4.h \
  C:/Users/16603/AppData/Local/SEGGER/SEGGER\ Embedded\ Studio/v3/packages/libraries/libcxx/include/stdint.h \
