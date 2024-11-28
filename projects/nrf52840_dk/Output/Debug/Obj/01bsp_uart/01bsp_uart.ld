@@ -84,7 +84,7 @@ SECTIONS
   .text ALIGN(__init_rodata_end__ , 4) : AT(ALIGN(__init_rodata_end__ , 4))
   {
     __text_start__ = .;
-    *(.text .text.* .gnu.linkonce.t.* .glue_7t .glue_7 .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*)
+    *(.text .text.* .glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(MAX(__text_start__ + 0x4 , .), 4);
   }
   __text_end__ = __text_start__ + SIZEOF(.text);

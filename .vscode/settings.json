@@ -24,6 +24,9 @@
         "nrfx_config.h": "c",
         "apply_old_config.h": "c",
         "app_usbd_cdc_acm.h": "c",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "schedule.h": "c",
+        "opendefs.h": "c",
+        "board_info.h": "c"
     }
 }

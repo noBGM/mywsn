@@ -1,2 +1,2 @@
 Output/Debug/Obj/01bsp_uart/ses_startup_nrf_common.o: \
- D:\360MoveData\Users\Administrator\Desktop\HKUSTGZ\IOTA5109\iota5109\openwsn-fw\bsp\boards\nrf52840_dk\sdk\ses_startup_nrf_common.s
+ C:\Users\16603\Desktop\HKUSTGZ\IOTA5109-WSN\openwsnProj\mywsn\bsp\boards\nrf52840_dk\sdk\ses_startup_nrf_common.s

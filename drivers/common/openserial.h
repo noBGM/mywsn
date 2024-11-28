@@ -54,6 +54,7 @@
 #define SERFRAME_PC2MOTE_RESET                   ((uint8_t)'Q')
 #define SERFRAME_PC2MOTE_DATA                    ((uint8_t)'D')
 #define SERFRAME_PC2MOTE_TRIGGERSERIALECHO       ((uint8_t)'S')
+#define SERFRAME_PC2MOTE_MYSF                    ((uint8_t)'M')
 
 //=========================== macros =========================================
 
@@ -158,6 +159,7 @@ owerror_t openserial_printSniffedPacket(uint8_t *buffer, uint8_t length, uint8_t
 void task_openserial_debugPrint(void);
 
 owerror_t openserial_printf(char *buffer, ...);
+owerror_t openserial_mysf_printf(char *buffer, ...);
 
 // receiving
 uint8_t openserial_getInputBufferFillLevel(void);

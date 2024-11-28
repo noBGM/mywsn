@@ -405,7 +405,7 @@
  *
  */
 #ifndef BOARD_OPENSERIAL_PRINTF
-#define BOARD_OPENSERIAL_PRINTF (0)
+#define BOARD_OPENSERIAL_PRINTF (1)
 #endif
 
 

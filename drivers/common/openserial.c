@@ -47,6 +47,8 @@ owerror_t internal_openserial_print(
         errorparameter_t arg2
 );
 
+typedef void (*pc_cmd_handler_t)(uint8_t* data, uint8_t len);
+extern pc_cmd_handler_t g_pcCmdHandler;
 // command handlers
 void openserial_handleRxFrame(void);
 
@@ -258,6 +260,88 @@ owerror_t openserial_printf(char *buffer, ...) {
     for(i = 0; i < 5; i++) {
         outputHdlcWrite(asn[i]);
     }
+
+    for (ptr = buffer; *ptr != '\0'; ptr++){
+        if (*ptr == '%') {
+              ptr++;
+              switch (*ptr) {
+                  case 'c':
+                      c = va_arg(ap, int);
+                      outputHdlcWrite(c);
+                      break;
+                  case 's':
+                      tmp = va_arg(ap, char*);
+                      while (*tmp != '\0'){
+                          outputHdlcWrite(*tmp);
+                          tmp++;
+                      }
+                      break;
+                  case 'd':
+                      d = va_arg(ap, int);
+                      snprintf(buf, 16, "%d", d);
+                      tmp = buf;
+                      while (*tmp != '\0'){
+                          outputHdlcWrite(*tmp);
+                          tmp++;
+                      }
+                      break;
+                  case 'x':
+                      d = va_arg(ap, int);
+                      snprintf(buf, 16, "%x", d);
+                      tmp = buf;
+                      while (*tmp != '\0'){
+                          outputHdlcWrite(*tmp);
+                          tmp++;
+                      }
+                      break;
+                  case 'p':
+                      p = va_arg(ap, void*);
+                      snprintf(buf, 16, "%p", p);
+                      tmp = buf;
+                      while (*tmp != '\0'){
+                          outputHdlcWrite(*tmp);
+                          tmp++;
+                      }
+                      break;
+                  case '%':
+                      outputHdlcWrite('%');
+                      break;
+                  default:
+                      for(tmp = fail; *tmp != '\0'; tmp++){
+                          outputHdlcWrite(*tmp);
+                      }
+              }
+        } else {
+            outputHdlcWrite(*ptr);
+        }
+    }
+
+    va_end(ap);
+
+    outputHdlcClose();
+
+    // start TX'ing
+    openserial_flush();
+#endif
+    return E_SUCCESS;
+}
+
+owerror_t openserial_mysf_printf(char *buffer, ...) {
+#if BOARD_OPENSERIAL_PRINTF
+    uint8_t  i;
+    char *ptr, *tmp;
+    char c;
+    void* p;
+    int d;
+    char buf[16];
+    char *fail = " - unknown format specifier - ";
+
+
+    va_list ap;
+    va_start(ap, buffer);
+
+    outputHdlcOpen();
+    outputHdlcWrite(SERFRAME_MOTE2PC_PRINTF);
 
     for (ptr = buffer; *ptr != '\0'; ptr++){
         if (*ptr == '%') {
@@ -611,8 +695,11 @@ void openserial_handleRxFrame() {
         case SERFRAME_PC2MOTE_TRIGGERSERIALECHO:
             openserial_handleEcho(&openserial_vars.inputBuf[1], openserial_vars.inputBufFillLevel - 1);
             break;
-        case SERFRAME_PC2MOTE_SCHEDULE:
-            process_schedule_command(&openserial_vars.inputBuf[1], openserial_vars.inputBufFillLevel - 1);
+        case SERFRAME_PC2MOTE_MYSF:
+            if(g_pcCmdHandler != NULL)
+                g_pcCmdHandler(&openserial_vars.inputBuf[1], openserial_vars.inputBufFillLevel - 1);
+            else
+                openserial_mysf_printf("g_pcCmdHandler is NULL\r\n");
             break;
     }
 }

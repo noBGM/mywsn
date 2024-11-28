@@ -25,6 +25,7 @@
 #include "sixtop.h"
 #include "neighbors.h"
 #include "msf.h"
+#include "mysf_schedule.h"
 //-- 03a-IPHC
 #include "openbridge.h"
 #include "iphc.h"
@@ -75,6 +76,7 @@ void openstack_init(void) {
     sixtop_init();
     neighbors_init();
     msf_init();
+    mysf_init(NODE_ROOT);
     //-- 03a-IPHC
     openbridge_init();
     iphc_init();

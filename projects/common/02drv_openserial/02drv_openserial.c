@@ -73,16 +73,16 @@ int mote_main(void) {
         debugpins_task_set();
         if (app_vars.timerFired==TRUE) {
             app_vars.timerFired = FALSE;
-            openserial_printf("%s",stringToPrint);
-            if (app_vars.fInhibit==TRUE) {
-                debugpins_slot_clr();
-                openserial_inhibitStart();
-                app_vars.fInhibit = FALSE;
-            } else {
-                debugpins_slot_set();
-                openserial_inhibitStop();
-                app_vars.fInhibit = TRUE;
-            }
+            openserial_mysf_printf("%s",stringToPrint);
+            //if (app_vars.fInhibit==TRUE) {
+            //    debugpins_slot_clr();
+            //    openserial_inhibitStart();
+            //    app_vars.fInhibit = FALSE;
+            //} else {
+            //    debugpins_slot_set();
+            //    openserial_inhibitStop();
+            //    app_vars.fInhibit = TRUE;
+            //}
         }
         debugpins_task_clr();
    }
@@ -113,6 +113,7 @@ void ieee154e_getAsn(uint8_t* array) {
 
 void idmanager_setJoinKey(uint8_t *key) {}
 void idmanager_triggerAboutRoot(void) {}
+void g_pcCmdHandler(uint8_t *buf, uint8_t bufLen) {}
 void openbridge_triggerData(void) {}
 void tcpinject_trigger(void) {}
 void udpinject_trigger(void) {}
