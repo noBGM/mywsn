@@ -124,6 +124,7 @@ void asnStoreFromEB(uint8_t *asn);
 void joinPriorityStoreFromEB(uint8_t jp);
 
 // synchronization
+// receiver son use syncpkt, sender son use syncack
 void synchronizePacket(PORT_TIMER_WIDTH timeReceived);
 
 void synchronizeAck(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -593,6 +594,8 @@ port_INLINE void activity_synchronize_newSlot(void) {
         return;
     }
 
+    ieee154e_vars.numOfnewSlot = ieee154e_dbg.num_newSlot;
+
     ieee154e_vars.radioOnInit = sctimer_readCounter();
     ieee154e_vars.radioOnThisSlot = TRUE;
 
@@ -622,13 +625,15 @@ port_INLINE void activity_synchronize_newSlot(void) {
         radio_rxEnable();
         radio_rxNow();
     } else {
-        // I'm listening last slot
+        // I have been listening since last slot
         ieee154e_stats.numTicsOn += ieee154e_vars.slotDuration;
         ieee154e_stats.numTicsTotal += ieee154e_vars.slotDuration;
 
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
 #endif
 
+        //每160个时隙更换一次监听信道
+        //目的：让未同步节点能扫描所有信道，增加接收EB的机会
         if (ieee154e_vars.asn.bytes0and1 % (NUM_CHANNELS * EB_PORTION) == 0) {
             // turn off the radio (in case it wasn't yet)
             radio_rfOff();
@@ -793,6 +798,10 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
             break;
         }
 
+        // 如果安全级别不是无安全级别，则需要解析IEs和获取ASN，
+        // 因为nonce是基于ASN创建的，
+        // 所以，在认证beacon之前，需要先解析IEs和获取ASN。
+        // 调用sixtop_send的l2_securityLevel会被设置为IEEE154_ASH_SLF_TYPE_NOSEC
         if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
             // If we are not synced, we need to parse IEs and retrieve the ASN
             // before authenticating the beacon, because nonce is created from the ASN
@@ -933,6 +942,7 @@ port_INLINE void activity_ti1ORri1(void) {
         }
     }
 
+    // 防止中断无限嵌套导致栈溢出：如果不是SLEEP状态，说明上一个时隙的操作还未完成就发生了超时
     // if the previous slot took too long, we will not be in the right state
     if (ieee154e_vars.state != S_SLEEP) {
         // log the error
@@ -975,6 +985,10 @@ port_INLINE void activity_ti1ORri1(void) {
                     TIME_TICS,                                        // timetype
                     isr_ieee154e_newSlot                              // callback
             );
+
+            //这里是关键，对于非根节点，它被设置为总是需要跳过非active-slot，用以节省能耗。
+            //这里直接修改了slotDuration，以确保在睡眠期间结束后才会发生新的slot。
+            //但这不影响当前的active-slot的行为。
             ieee154e_vars.slotDuration = TsSlotDuration * (ieee154e_vars.numOfSleepSlots);
 
             //increase ASN by numOfSleepSlots-1 slots as at this slot is already incremented by 1
@@ -2363,6 +2377,7 @@ port_INLINE void ieee154e_syncSlotOffset(void) {
     ieee154e_vars.freq = 11 + (asnOffset + channelOffset)%16
     */
     for (i = 0; i < NUM_CHANNELS; i++) {
+        //channel = 11 + chTemplate[(asnOffset + channelOffset) % NUM_CHANNELS]
         if ((ieee154e_vars.freq - 11) == ieee154e_vars.chTemplate[i]) {
             break;
         }
@@ -2404,7 +2419,16 @@ void synchronizePacket(PORT_TIMER_WIDTH timeReceived) {
     // then already pass which is why we need the new slot to end after the remaining time which is timeCorrection
     // and in this constellation is guaranteed to be positive.
 
-    if (currentValue < timeReceived) {
+    /* to understand why currentValue < timeReceived can happen, refer to the following code:
+        //I'm in the middle of receiving a packet
+        if (ieee154e_vars.state == S_SYNCRX) {
+            return;
+        }
+        this judgement stops the new slot period, and return back to last slot, where it's just before changeIsSync(TRUE);
+        however, though the process goes back to last slot, the current time is based on the new slot. 
+    */
+
+    if (ieee154e_vars.numOfnewSlot != ieee154e_dbg.num_newSlot) {
         newPeriod = (PORT_TIMER_WIDTH) timeCorrection;
     } else {
         newPeriod = (PORT_TIMER_WIDTH)((PORT_SIGNED_INT_WIDTH) currentPeriod + timeCorrection);
@@ -2730,7 +2754,7 @@ static void handlePacketsAndBuffers(void) {
 }
 
 /**
- * 处理cell统计和自动cell管理
+ * 处理cell统计和自主cell管理
  */
 static void handleCellManagement(void) {
     slotinfo_element_t info;

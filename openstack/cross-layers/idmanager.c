@@ -220,6 +220,9 @@ void idmanager_triggerAboutRoot(void) {
             break;
         case ACTION_NO:
             idmanager_setIsDAGroot(FALSE);
+            //set node to nonroot,
+            //meaning it leave the position as a time basement. 
+            //so it has to wait for EB to acquire the network sync.
             idmanager_vars.slotSkip = TRUE;
             break;
         case ACTION_TOGGLE:

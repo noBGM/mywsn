@@ -277,6 +277,9 @@ void iphc_receive(OpenQueueEntry_t *msg) {
         return;
     }
 
+    //只要是广播包，一定是来自TSCH网络或RPL网络的邀请广播，分别对应EB和DIO,
+    //所以，对于广播包，无论是否是根节点，都必须走网络栈，因为需要维护相应的网络。
+    //只有当既是根节点又是单播包时，才通过串口上传给openvisualizer.
     // if the address is broadcast address, the ipv6 header is the inner header
     if (idmanager_getIsDAGroot() == FALSE || packetfunctions_isBroadcastMulticast(&(ipv6_inner_header.dest))) {
         packetfunctions_tossHeader(&msg, page_length);

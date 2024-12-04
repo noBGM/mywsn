@@ -375,7 +375,7 @@ owerror_t sixtop_send(OpenQueueEntry_t *msg) {
     msg->l2_frameType = IEEE154_TYPE_DATA;
 
     // set l2-security attributes
-    msg->l2_securityLevel = IEEE802154_security_getSecurityLevel(msg);
+    msg->l2_securityLevel = IEEE802154_security_getSecurityLevel(msg);//影响是否执行isValidJoin
     msg->l2_keyIdMode = IEEE802154_SECURITY_KEYIDMODE;
     msg->l2_keyIndex = IEEE802154_security_getDataKeyIndex();
 

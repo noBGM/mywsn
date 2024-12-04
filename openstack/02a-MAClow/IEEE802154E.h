@@ -258,6 +258,7 @@ typedef struct {
     bool isSync;                                    // TRUE iff mote is synchronized to network
     OpenQueueEntry_t localCopyForTransmission;      // copy of the frame used for current TX
     PORT_TIMER_WIDTH numOfSleepSlots;               // number of slots to sleep between active slots
+    PORT_TIMER_WIDTH numOfnewSlot;                  // used in syncpacket and syncack
     // as shown on the chronogram
     ieee154e_state_t state;                         // state of the FSM
     OpenQueueEntry_t *dataToSend;                   // pointer to the data to send
@@ -268,7 +269,7 @@ typedef struct {
     PORT_TIMER_WIDTH syncCapturedTime;              // captured time used to sync
     // channel hopping
     uint8_t freq;                                   // frequency of the current slot
-    uint8_t asnOffset;                              // offset inside the frame
+    uint8_t asnOffset;                              // offset for the channel hopping
     uint8_t singleChannel;                          // the single channel used for transmission
     bool singleChannelChanged;                      // detect id singleChannelChanged
     uint8_t chTemplate[NUM_CHANNELS];               // storing the template of hopping sequence

@@ -112,6 +112,7 @@
 
 #if SLOTDURATION==20
     // time-slot related
+    //20/（1/32.768）=655.36
     #define PORT_TsSlotDuration                 656   // counter counts one extra count, see datasheet
 
 #if BOARD_PCA10056

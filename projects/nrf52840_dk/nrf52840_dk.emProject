@@ -977,7 +977,7 @@
       recurse="Yes" />
     <folder
       Name="openstack"
-      exclude="mysf_schedule_member.c;mysf_schedule_mobile.c;mysf_schedule_leader.c;"
+      exclude="mysf_schedule_member.c;mysf_schedule_mobile.c;mysf_schedule_leader.c;04-TRAN;03b-IPv6;03a-IPHC"
       filter="*.h;*.c"
       path="../../openstack"
       recurse="Yes" />
