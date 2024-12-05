@@ -2817,8 +2817,7 @@ static void finalizeSlot(void) {
     }
 
     // 恢复串口活动
-    if (DURATION_si + ieee154e_vars.startOfSlotReference - opentimers_getValue() < 
-        ieee154e_vars.slotDuration) {
+    if (opentimers_getValue() - ieee154e_vars.startOfSlotReference < DURATION_si) {
         openserial_inhibitStop();
     }
 }

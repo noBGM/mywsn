@@ -144,7 +144,7 @@ void initRootSchedule(void) {
         // 为每个组长添加接收时隙（接收来自组长的数据）
         schedule_addActiveSlot(
             ROOT_LEADER_LINKS[i].slotOffset,
-            CELLTYPE_RX,                    // 接收时隙
+            CELLTYPE_RX,                     // 接收时隙
             FALSE,                           // 非共享时�
             FALSE,                           // 自主调度
             ROOT_LEADER_LINKS[i].channelOffset,
