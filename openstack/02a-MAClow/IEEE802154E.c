@@ -18,6 +18,7 @@
 #include "sctimer.h"
 #include "openrandom.h"
 #include "msf.h"
+#include "mysf_schedule.h"
 
 //=========================== definition ======================================
 
@@ -612,7 +613,13 @@ port_INLINE void activity_synchronize_newSlot(void) {
 #if IEEE802154E_SINGLE_CHANNEL
         ieee154e_vars.freq = IEEE802154E_SINGLE_CHANNEL;
 #else
-        ieee154e_vars.freq = (openrandom_get16b() & 0x0F) + 11;
+        #if SCHEDULE_LEADER
+            ieee154e_vars.freq = calculateFrequency(SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET);
+        #elif SCHEDULE_MEMBER   
+            ieee154e_vars.freq = calculateFrequency(SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET+1);
+        #else
+            ieee154e_vars.freq = (openrandom_get16b() & 0x0F) + 11;
+        #endif
 #endif
 
         // configure the radio to listen to the frequency
@@ -1006,6 +1013,7 @@ port_INLINE void activity_ti1ORri1(void) {
     cellType = schedule_getType();
     switch (cellType) {
         case CELLTYPE_TXRX:
+        case CELLTYPE_TX_CMD:
         case CELLTYPE_TX:
             // assuming that there is nothing to send
             ieee154e_vars.dataToSend = NULL;
@@ -1013,11 +1021,17 @@ port_INLINE void activity_ti1ORri1(void) {
             schedule_getNeighbor(&neighbor);
 
             // check whether we can send
-            if (schedule_getOkToSend()) {
+            if (schedule_getOkToSend() && mysf_getOkToSend()) {
                 if (packetfunctions_isBroadcastMulticast(&neighbor) == FALSE) {
 
                     // look for a unicast packet to send
-                    ieee154e_vars.dataToSend = openqueue_macGetUnicastPacket(&neighbor);
+                    //ieee154e_vars.dataToSend = openqueue_macGetUnicastPacket(&neighbor);
+                    if(packetfunctions_isToRoot(&neighbor)){
+                        ieee154e_vars.dataToSend = openqueue_getPacketByComponent(COMPONENT_LEADER_TO_ROOT);
+                    }else{
+                        //移动节点也适用于该接口。
+                        ieee154e_vars.dataToSend = openqueue_getPacketByComponent(COMPONENT_LEADER_TO_MEMBER);
+                    }
 
                     if (ieee154e_vars.dataToSend == NULL) {
                         ieee154e_vars.dataToSend = openqueue_macGetKaPacket(&neighbor);
@@ -1037,7 +1051,11 @@ port_INLINE void activity_ti1ORri1(void) {
                     if (ieee154e_vars.dataToSend == NULL) {
                         couldSendEB = TRUE;
                         // look for an EB packet in the queue
-                        ieee154e_vars.dataToSend = openqueue_macGetEBPacket();
+                        if(ieee154e_vars.slotOffset == 0){
+                            ieee154e_vars.dataToSend = openqueue_macGetEBPacket();
+                        }else{//组内资源广播
+                            ieee154e_vars.dataToSend = openqueue_getPacketByComponent(COMPONENT_LEADER_TO_MEMBER);
+                        }
                     }
                 }
             }
@@ -1820,6 +1838,16 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
                     ) {
                 synchronizePacket(ieee154e_vars.syncCapturedTime);
             }
+            #if SCHEDULE_LEADER
+            if(storeMemberData(schedule_getMemberID(), ieee154e_vars.dataReceived->payload, ieee154e_vars.dataReceived->length)){
+                mysf_setOkToSend(TRUE);
+                //record here，记录得到一个完整的坐标组。
+                //标记在下次活动时隙时组长节点被允许向根节点发送坐标集合，
+                //或者，仅仅标记当前坐标组完整的标志，后续逻辑可另作处理，
+                //比如，当组长节点累积多个完整的坐标组之后，在下次多个连续活动时隙时才一次性发送。
+                //这又涉及到支持在连续活动时隙中修改发送定时器时长的策略，目前默认是编译时确定。
+            }
+            #endif
             // indicate reception to upper layer (no ACK asked)
             notif_receive(ieee154e_vars.dataReceived);
             // reset local variable
@@ -2314,7 +2342,7 @@ bool isValidEbFormat(OpenQueueEntry_t *pkt, uint16_t *lenIE) {
 
                             channeloffset = *((uint8_t * )(pkt->payload + ptr + 5 + 5 * i + 2));        // slotframes length
                             channeloffset |= *((uint8_t * )(pkt->payload + ptr + 5 + 5 * i + 3)) << 8;
-
+                        /* 手动指定EB时隙。
                             schedule_addActiveSlot(
                                     slotoffset,    // slot offset
                                     CELLTYPE_TXRX, // type of slot
@@ -2323,6 +2351,7 @@ bool isValidEbFormat(OpenQueueEntry_t *pkt, uint16_t *lenIE) {
                                     channeloffset, // channel offset
                                     &temp_neighbor // neighbor
                             );
+                        */
                         }
                     }
                     slotframelink_ie_checkPass = TRUE;
@@ -2611,7 +2640,8 @@ port_INLINE uint8_t calculateFrequency(uint8_t channelOffset) {
         return ieee154e_vars.singleChannel; // single channel
     } else {
         // channel hopping enabled, use the channel depending on hopping template
-        return 11 + ieee154e_vars.chTemplate[(ieee154e_vars.asnOffset + channelOffset) % NUM_CHANNELS];
+        //return 11 + ieee154e_vars.chTemplate[(ieee154e_vars.asnOffset + channelOffset) % NUM_CHANNELS];
+        return 11 + ieee154e_vars.chTemplate[channelOffset % NUM_CHANNELS];
     }
 }
 

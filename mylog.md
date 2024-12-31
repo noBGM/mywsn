@@ -196,24 +196,44 @@ void synchronizePacket(PORT_TIMER_WIDTH timeReceived) {
  }
 ```
 
-### 保证时隙顺利过度
+### 保证时隙顺利跳转
 
 ```c
 //IEEE802154e.c
 #define DURATION_si  ieee154e_vars.slotDuration-SERIALINHIBITGUARD
 
-	opentimers_scheduleAbsolute(
-            ieee154e_vars.serialInhibitTimerId,     // timerId
-            DURATION_si,                            // duration
-            ieee154e_vars.startOfSlotReference,     // reference
-            TIME_TICS,                              // timetype
-            isr_ieee154e_inhibitStart               // callback
+void activity_synchronize_newSlot(...){
+    ...
+    opentimers_scheduleAbsolute(
+        ieee154e_vars.serialInhibitTimerId,     // timerId
+        DURATION_si,                            // duration
+        ieee154e_vars.startOfSlotReference,     // reference
+        TIME_TICS,                              // timetype
+        isr_ieee154e_inhibitStart               // callback
     );
+	openserial_inhibitStop();
+}
+void endslot(){
+    ...
+    if (ieee154e_vars.isSync == TRUE) {
+        opentimers_scheduleAbsolute(
+            ieee154e_vars.serialInhibitTimerId,
+            DURATION_si,
+            ieee154e_vars.startOfSlotReference,
+            TIME_TICS,
+            isr_ieee154e_inhibitStart
+        );
+    }
 
-    openserial_inhibitStop();
+    if (opentimers_getValue() - ieee154e_vars.startOfSlotReference < DURATION_si) {
+        openserial_inhibitStop();
+    }
+}
 ```
 
-在时隙跳转前设置约1ms的保护间隔，用来保证
+在时隙跳转前设置约1ms的保护间隔，用来保证时隙跳转时串口不活动。
+
+注意Duration_si = ieee154e_vars.slotDuration-SERIALINHIBITGUARD，而ieee154e_vars.slotDuration会被修改为时隙长度乘以睡眠时隙数，是为了实现让串口禁用定时器始终是在活动时隙跳转前一小段时间（1ms）才触发。同时也保证了在睡眠中的串口通信是始终允许的。
 
 ### 安全加密机制
 
@@ -366,7 +386,7 @@ MLME IE组包含了与MAC层管理相关的信息，比如：
 
       - 突发事件处理不及时，根节点可能在处理其他的事情或者距离较远：组长则可以第一时间响应，再由根节点支援，PC做出决策。
 
-   2. 设备故障
+   2. 设备故障、错误处理
 
       ```
       根节点管理：
@@ -376,6 +396,105 @@ MLME IE组包含了与MAC层管理相关的信息，比如：
       设备损坏 → 组长记录 → 根节点汇总
                → 分级处理（小问题就近解决，大问题上报）
       ```
+
+      传输失败的处理，重传开销。
+
+### 随机数生成算法
+
+```c
+/*
+openstack\cross-layers\openrandom.c: openrandom_get16b()
+*/
+uint16_t openrandom_get16b(void) {
+    uint8_t i;
+    uint16_t random_value;
+    random_value = 0;
+    for (i = 0; i < 16; i++) {
+        // Galois shift register
+        // taps: 16 14 13 11
+        // characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1
+        random_value |= (random_vars.shift_reg & 0x01) << i;
+        random_vars.shift_reg = (random_vars.shift_reg >> 1) ^ (-(int16_t)(random_vars.shift_reg & 1) & 0xb400);
+    }
+    return random_value;
+}
+```
+
+这段代码实现了一个基于LFSR(线性反馈移位寄存器)的16位随机数生成器，其工作原理如下：
+
+1. 基本结构：
+- 使用一个16位的移位寄存器(shift_reg)
+- 采用Galois LFSR配置
+- 特征多项式为x^16 + x^14 + x^13 + x^11 + 1，对应的tap位置为16、14、13、11位
+
+2. 生成过程：
+- 每次循环取移位寄存器的最低位(LSB)
+- 将这个位放到结果的对应位置
+- 对移位寄存器进行右移操作
+- 如果移出的位为1，则与反馈多项式(0xb400)进行异或运算
+
+3. 关键实现：
+```c
+random_value |= (random_vars.shift_reg & 0x01) << i;  // 取最低位并放到结果中
+random_vars.shift_reg = (random_vars.shift_reg >> 1)   // 右移
+    ^ (-(int16_t)(random_vars.shift_reg & 1) & 0xb400); // 条件异或
+```
+
+4. 数学原理：
+- 在GF(2)伽罗瓦域上进行运算
+- 选择的特征多项式是本原多项式，可以产生最大周期序列
+- 周期长度为2^16-1，几乎遍历了所有16位非零值
+
+这种实现方式的优点是：
+- 硬件实现简单
+- 计算速度快
+- 周期性好
+- 资源占用少
+
+缺点是：
+- 随机性相对较弱
+- 序列可预测
+- 不适合密码学应用
+
+### EB格式
+
+<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20241216172221495.png" alt="image-20241216172221495" style="zoom:50%;" />
+
+[RFC 8180: Minimal IPv6 over the TSCH Mode of IEEE 802.15.4e (6TiSCH) Configuration (rfc-editor.org)](https://www.rfc-editor.org/rfc/rfc8180.html#appendix-A.1)
+
+### 实现链路重传支持？
+
+```c
+port_INLINE void activity_tie5(void) {
+    // indicate transmit failed to schedule to keep stats
+    schedule_indicateTx(&ieee154e_vars.asn, FALSE);
+
+    // decrement transmits left counter
+    ieee154e_vars.dataToSend->l2_retriesLeft--;
+
+    if (ieee154e_vars.dataToSend->l2_retriesLeft == 0) {
+        // indicate tx fail if no more retries left
+        notif_sendDone(ieee154e_vars.dataToSend, E_FAIL);
+    } else {
+        // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E component
+        ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+    }
+
+    // reset local variable
+    ieee154e_vars.dataToSend = NULL;
+
+    // abort
+    endSlot();
+}
+```
+
+核心是：如果当前发送失败（触发异常），且重传次数还有剩余，则 ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+
+因为mac的取包逻辑就是在每个活动时隙搜索owner为COMPONENT_SIXTOP_TO_IEEE802154E的pkt。
+
+### 位图
+
+用于组长节点快速判断哪些小组成员提交了数据。
 
 
 
@@ -411,6 +530,7 @@ MLME IE组包含了与MAC层管理相关的信息，比如：
 
    - 若未同步则进行监听，activity_synchronize_newSlot
 
+     - 随机选择一个信道
      - asn++
 
    - 监听到帧开始，activity_synchronize_startOfFrame
@@ -436,7 +556,228 @@ MLME IE组包含了与MAC层管理相关的信息，比如：
 
    - 首先，网络伊始，根节点、非根节点未建立任何联系。
 
-   - 根节点和非根节点都会调用schedule_startDAGroot为自己添加一个minimal cell（0，0）。
+   - 根节点会调用schedule_startDAGroot为自己添加一个minimal cell（0，0）。非根节点则会在ieee154e_init中配置定时器以直接开始时隙活动，进而进入activity_synchronize_newSlot()等待同步。
+
+   - 当进入minimal cell后，根节点由于自身就是时间基准，所以配置为isSync(true)，然后调用openqueue_macGetEBPacket获取EB包，进一步根节点将自己的asn放入EB包的l2_ASNpayload字段......
+
+     > 注意，EB包是由sixtop_init()初始化函数注册的定时器回调sixtop_sendingEb_timer_cb以每超帧周期1/10的概率触发sixtop_sendEB，该函数sixtop_sendEB会创建EB包并推入包队列供openqueue_macGetEBPacket获取。
+
+   - 根节点启动发送EB包的流程
+
+   - 非根节点则一开始就走inSync(false)且非root分支进入了activity_synchronize_newSlot()，持续监听，直到定时器到期（TsSlotDuration）触发下一个时隙到来
+
+     - 若新时隙到来时，上个时隙已经处于接收状态（即接收中途时隙就结束了），新时隙会结束中断并返回，恢复到上个时隙的堆栈，继续中断前的指令进行处理。这里会有一个问题（详见上面的同步bug笔记）
+     - 一直没有进行接收，则除了一些特殊处理外，即便时隙更迭，也会一直处于接收状态，直到接收到信号才会更换状态。
+
+   - 非根节点接收到EB之后，会调用ieee154e_processIEs()
+
+     - 进一步调用isValidEBFormat，将EB信息中的时隙偏移模板、信道偏移模板（也是0，0）加入本地调度表，用于支持本地的EB发送。
+       - 调用asnStoreFromEB取出EB的同步内容（主要是asn，slotOffset，asnOffset），并通过synchronizePacket(caputureTime_startOfFrame)将自己当前的slot边界同步到根节点的边界。
+
+     > 非根节点有两种添加邻居的方式：
+     >
+     > 1. 在每次完成整个接收操作后，会调用notif_receive()，将task_sixtopNotifReceive()推入调度器任务队列，进而调用neighbors_indicateRx()，进而调用registerNewNeighbor()为自己添加新邻居（如果是的话）。
+     > 2. 收到EB后，在activity_synchronize_endOfFrame()中的synchronizePacket()之后直接调用notif_receive()，后续过程与1相同。
+
+4. 当根节点切换为非根节点
+
+   - 非根节点都会设置slotSkip = TRUE：
+     - 在activity_ti1ORri1中配置需要跳过一些非活动时隙。
+
+   - 原因：
+     - 当节点从根节点切换为非根节点时失去了时间基准的地位需要重新通过EB获取网络同步
+     - 减少能耗。
+
+5. 非根节点发普通包
+
+   - 非根节点在registerNewNeighbor()中将根节点注册为自己的邻居后，03macpong的macpong_send会调用sixtop_send_internal向此邻居发送单播包，在sixtop_send_internal中通过自主调度（即根据根节点的地址计算其slotoffset和channeloffset）注册活动时隙。
+
+     > 依据是在msf_init()中，每个节点都会根据自主调度规则，根据自己的地址来计算并注册自己的接收活动时隙。
+
+6. 非根节点收普通包
+
+   - task_sixtopNotifReceive中正常会调用网络层接口iphc_receive将数据包向网络层进行传递，而在03macpong中修改处理流程为如下，使得数据包直接在6p（仍为mac）层处理。
+
+     ```c
+     void iphc_receive(OpenQueueEntry_t *msg) {
+         msg->owner = COMPONENT_IPHC;
+         macpong_send(++msg->payload[0]);
+         openqueue_freePacketBuffer(msg);
+     }
+     ```
+
+   - 在iphc_receive的前几行进行一次判断，若是EB包，则不会往上传。
+
+7. 非根节点发EB包
+
+   - 核心逻辑仍在sixtop_sendEB中，若以下条件为真，则说明该非根节点不满足发送EB要求。
+
+     ```c
+     (ieee154e_isSynch() == FALSE) ||
+     (IEEE802154_security_isConfigured() == FALSE) ||
+     (icmpv6rpl_getMyDAGrank() == DEFAULTDAGRANK) ||
+     icmpv6rpl_daoSent() == FALSE)
+     /*
+     在开始广播网络之前，我需要确保自己满足以下条件：
+     已经同步到网络
+     已经加入网络
+     已经获得了DAG等级(在RPL路由中的层级)
+     已经发送过DAO消息(下行路由通告)
+     这些条件都是为了确保其他节点能够通过下行路由找到我，所以必须先发送DAO消息。
+     简单来说就是：在节点开始向外广播之前，需要先确保自己是网络中的"合法公民"，并且其他节点能够可靠地找到自己。这就像是你要先有门牌号，别人才能找到你家一样。
+     */
+     ```
+
+   - 若满足条件，则发生过程和根节点一致。
+
+8. 除了IE外的payload在什么地方处理的？
+
+   - IE在MAC层进行处理。
+   - notif_receive往上层传，直到应用层。
+
+## 修改
+
+### 网络拓扑结构
+
+1. 问题：如何在最初让组长节点确定与根节点的活动时隙？
+   1. 硬编码。
+      - 组号：节点硬编码组号。
+        - 根节点首先在其本地为每个组号分配发送和接收时隙、以及一个额外的广播时隙。
+        - 根节点在广播包携带所有组的调度表信息。
+        - 组长在其本地会配置一个和根节点同样的广播时隙。
+        - 组长节点接收到广播包后取出调度表，并根据自己的组号计算或取出属于自己的调度表。
+
+2. 问题：如何在最初让组员节点确定与组长节点的活动时隙？
+   1. 组长节点广播调度表。组员节点收到调度表后取出属于自己的资源。
+
+3. 问题：某次传输失败怎么处理？
+   1. 整帧丢弃？（帧：即用以描述某一时刻的动作的所有节点的坐标集合）
+      - 丢弃逻辑在组长节点处处理，将丢弃之后的数据整理发送到根节点。	
+
+4. 问题：组员节点如何区分根节点和组长节点的EB？
+   1. 根节点和组长节点使用不同的信道偏移。
+   2. 取消了信道偏移随时隙变化的随机性，即修改calculateFrequency()，删除了ieee154e_vars.asnOffset
+   3. 取消了同步过程中监听时频率选择的随机性，即将activity_synchronize_newSlot中的ieee154e_vars.freq = (openrandom_get16b() & 0x0F) + 11修改为ieee154e_vars.freq=calculateFrequency(SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET);
+
+5. 问题：组员节点如何区分不同的组长节点EB？
+
+> 信道区分？EB内容区分？
+>
+> 如果信道区分，那么对于移动节点，遍历信道就可以得到所有的组长信息。
+>
+> 如果EB内容区分，则需要取出EB才能得到所有的组长信息，从而判断是否是期望的组长，且可能会重复获取同一个组长的信息，这些会带来额外的计算开销从而拖缓系统的响应。
+>
+> 但即便是信道区分，EB也需要携带不同组长所特有的信息，比如该组组长所使用的广播时隙的时隙偏移和信道偏移，组员节点将用于注册相应的接收时隙。
+
+​		1. 暂时选择通过信道来划分。
+
+<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20241216142705520.png" alt="image-20241216142705520" style="zoom:33%;" />
+
+若1、2、3、4在同一信道偏移上，则组员节点只能通过EB内容来区分组长。
+
+若在同一时隙上，则移动节点无法在一个超帧周期内获取所有组长节点的信息。
+
+而这种布局可以同时满足两种要求。
+
+6. 问题：非根节点收到根节点的EB后如何确定自己的EB发送计划？
+
+   原本方案是：调用isValidEBFormat，将EB信息中的时隙偏移模板、信道偏移模板（0，0，可修改）加入本地调度表，用于支持本地的EB发送。
+
+   由于我们的方案是不同组长的EB发送应该在不同的信道偏移及时隙偏移，而EB本身作为广播包也不应该有特异性，即每次发送的EB包都不应该不相同，所以取消了在isValidEBFormat中根据EB所携带的模板信息加入本地调度表的部分。
+
+7. 问题：组员节点到组长节点的单播如何确定？
+
+   答：由组长节点广播小组全局调度表实现。各组员节点根据自身标号（eg. 0,1,2,3,...,15，共16个组员节点）从组长节点广播的调度表中取出属于自己的资源分配。在此之前，组长节点应已经注册好了对于每个组员的接收时隙，（eg. 16个组员，每个组员注册X个发送时隙，那么组长节点就要提前注册好16X个接收时隙）。
+
+   7.1 问题：若有组员注册时隙失败，组长节点如何知晓并处理？
+
+   ​	答：组员节点注册时隙失败有以下迹象：组长节点在位于该组员节点的接收状态时会触发超时。	组长节点将始终在其广播时隙尝试恢复出问题的组员节点，在其广播包中用1个字节表示该广播  	包的类型，此情形可表示为针对某几个可能出问题的特定组员的组播，其他收到广播包的组员节	点将忽略此包。此策略的依据是：组长节点没有能力去修复出问题的组员节点，只能期待其问题	被人为解决，组长节点只需要保证其组员节点再次成功上线的时候，依然能够顺利加入小组。
+
+8. 问题：组长节点如何知道移动节点的加入？
+
+   答：移动节点通过接收并分析所有组长节点的EB，选择最合适的组长节点进行加入。
+
+   组长对移动时隙池提前注册好本地的接收部分，当接收部分收到响应后注册发送部分（减小功耗）。举个例子，组长A的移动时隙池包含元索引10、11、12、13，移动节点从EB中取得时隙池之后，会从可选TX和RX部分选取期望的发送和接收时隙并注册，然后通过该时隙向组长A发送自己入组的信息（包括自身ID和所选取的时隙索引集）和想上报的应用数据信息，组长A收到后，根据入组信息中的接收时隙索引在其本地注册相应的发送和接收时隙。
+
+   类比于linux支持热插拔的机制。在内核的内存布局中分出来一块zone_device专门留给热插拔的设备，这块区域不能被用作普通的系统内存，可能还有特殊的一致性要求。
+
+9. 问题：如果多个移动节点选取了同一个组长节点的同一块资源，如何知晓，如何解决？
+
+   答：同步机制问题，要么使这种情况能够避免，要么存在锁机制，要么使移动节点最终加入的决定权留在组长节点手里（而非移动节点检查到EB就能加入）。我们采取的机制是元索引+资源池，为每个移动节点分配其专属的元时隙，但后续其真正使用的资源池是共享的。在元索引的交互中组长会最终确定资源池的最终分配。
+
+   - 分配机制对于移动节点而言可以是：what i need OR what i choose，
+
+10. 每个组长节点的移动时隙池都是一样的吗？
+
+    答：为了支持不同功能类型的移动节点，组长节点的移动时隙池在一个超帧中其时隙偏移的分布是不同的，数据收集型的时隙池的时隙资源是连续的，用于快速低延迟的数据和指令信息交换。而交互型的时隙池的时隙资源是均匀分布的，用于频繁入组出组的握手信息交换。
+
+11. 组长的EB包含什么额外内容吗？
+
+    1. 表示该组的冷热程度，即最近有多少个移动节点加入了该组。
+    2. 表示该组的资源数量和分布类型
+       1. 但是有信息滞后性，会影响移动节点的决策优劣。
+       2. .
+
+12. 根节点的角色？
+
+    1. speaker of server, 作为server的无线通信话筒，传递server的指令
+    2. what else? root节点为了能够完整接收所有队长节点传输来的数据，通常会被分配大于预期的时隙资源，也就是说root节点的资源总是会有余量的。以及在通过串口传输完成一个组长节点的所有数据之后，在下一个组长节点的传输到来之前，也是能够完成部分工作的。否则，就需要server的额外的指令，再者如果传输的数据是有问题的则浪费了一次串口传输的资源。
+
+### 数据收集策略
+
+特征：
+
+1. 非关节节点距离关节的距离不变，只是方向变化。（球面运动）
+2. 关节节点与相邻关节节点的距离不变，只是方向变化。（根节点可以据此优化）
+
+问题：
+
+1. 组长节点可以累计多少接收的数据再一起发送给根节点？
+   1. 非实时处理系统的时延容忍度较高
+
+## 06mysf逻辑
+
+去掉网络层、传输层、应用层协议，只保留了mac层。
+
+### 通信流程
+
+1. 根节点在编译时确定，且提前已分配和各组长节点的后续通信资源，相应的，组长节点也分配好了和根节点的通信资源。
+
+   > 根节点会周期性的广播EB，组长节点需要通过成功接收EB来和根节点同步。
+
+2. 组长节点同步过程
+
+   - 进入一个新时隙，isr_ieee154e_newSlot
+
+   - 若未同步则进行监听，activity_synchronize_newSlot
+
+     - 随机选择一个信道
+     - asn++
+
+   - 监听到帧开始，activity_synchronize_startOfFrame
+
+     - 记录当前时刻timeReceived
+
+     - ieee154e_processIEs()处理EB帧的IE
+
+       - 在isValidEbFormat()中调用asnStoreFromEB()存储EB帧携带的asn。
+
+       - ieee154e_syncSlotOffset()获取slotOffset和asnOffset
+
+         > slotOffset，时隙在时隙帧中偏移，不多说。
+         >
+         > asnOffset，用于计算信道跳变，channel = 11 + chTemplate[(asnOffset + channelOffset) % NUM_CHANNELS]，信道模板chTemplate存储的是相对于协议规定的信道11的偏移。asnOffset是每时隙+1，channelOffset是用户指定。
+
+   - 帧接收末尾，activity_synchronize_endOfFrame
+
+     - synchronizePacket(timeReceived);
+     - changeIsSync(TRUE);
+
+3. 根节点发EB包：
+
+   - 首先，网络伊始，根节点、非根节点未建立任何联系。
+
+   - 根节点会调用schedule_startDAGroot为自己添加一个minimal cell（0，0）。非根节点则会在ieee154e_init中配置定时器以直接开始时隙活动，进而进入activity_synchronize_newSlot()等待同步。
 
    - 当进入minimal cell后，根节点由于自身就是时间基准，所以配置为isSync(true)，然后调用openqueue_macGetEBPacket获取EB包，进一步根节点将自己的asn放入EB包的l2_ASNpayload字段......
 
@@ -485,30 +826,42 @@ MLME IE组包含了与MAC层管理相关的信息，比如：
 
    - 在iphc_receive的前几行进行一次判断，若是EB包，则不会往上传。
 
-7. 除了IE外的payload在什么地方处理的？
+7. 非根节点发EB包
+
+   - 核心逻辑仍在sixtop_sendEB中，若以下条件为真，则说明该非根节点不满足发送EB要求。
+
+     ```c
+     (ieee154e_isSynch() == FALSE) ||
+     (IEEE802154_security_isConfigured() == FALSE) ||
+     (icmpv6rpl_getMyDAGrank() == DEFAULTDAGRANK) ||
+     icmpv6rpl_daoSent() == FALSE)
+     /*
+     在开始广播网络之前，我需要确保自己满足以下条件：
+     已经同步到网络
+     已经加入网络
+     已经获得了DAG等级(在RPL路由中的层级)
+     已经发送过DAO消息(下行路由通告)
+     这些条件都是为了确保其他节点能够通过下行路由找到我，所以必须先发送DAO消息。
+     简单来说就是：在节点开始向外广播之前，需要先确保自己是网络中的"合法公民"，并且其他节点能够可靠地找到自己。这就像是你要先有门牌号，别人才能找到你家一样。
+     */
+     ```
+
+   - 若满足条件，则发生过程和根节点一致。
+
+8. 除了IE外的payload在什么地方处理的？
 
    - IE在MAC层进行处理。
    - notif_receive往上层传，直到应用层。
 
-### 修改
 
-问题：如何在最初让组长节点确定与根节点的活动时隙？
 
-1. 硬编码。
-   - 组号：节点硬编码组号。
-     - 根节点首先在其本地为每个组号分配发送和接收时隙、以及一个额外的广播时隙。
-     - 根节点在广播包携带所有组的调度表信息。
-     - 组长在其本地会配置一个和根节点同样的广播时隙。
-     - 组长节点接收到广播包后取出调度表，并根据自己的组号计算或取出属于自己的调度表。
+## 性能比较
 
-问题：如何在最初让组员节点确定与组长节点的活动时隙？
+1. 移动节点：通过组长入网 vs 通过根节点入网
 
-1. 组长节点广播调度表。组员节点收到调度表后取出属于自己的资源。
+   虽然本质上都是操纵同样的时隙单元，但在组长这是作为被分配的额外的移动池，组长自己有权力去支配。
 
-问题：某次传输失败怎么处理？
-
-1. 整帧丢弃？（帧：即用以描述某一时刻的动作的所有节点的坐标集合）
-   - 丢弃逻辑在组长节点处处理，将丢弃之后的数据整理发送到根节点。	
+   根节点则掌管所有的时隙单元。移动节点固然可以直接向根节点去申请，但如果在移动节点远离根节点的时候，移动节点是否只能被动等待合适的加入时机呢？即便隔得近，又如果多个移动节点都想和根节点申请呢，冲突带来的影响？
 
 # 新增
 
@@ -635,4 +988,6 @@ if (opentimers_getValue() - ieee154e_vars.startOfSlotReference < DURATION_si) {
     openserial_inhibitStop();
 }
 ```
+
+串口禁用相关说明见第一部分内容。
 

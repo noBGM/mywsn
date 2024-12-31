@@ -17,6 +17,7 @@
 #include "idmanager.h"
 #include "schedule.h"
 #include "msf.h"
+#include "mysf_schedule.h"
 
 //=========================== define ==========================================
 
@@ -742,7 +743,7 @@ port_INLINE void sixtop_sendEB(void) {
     if (ebIEsBytestream[EB_SLOTFRAME_NUMLINK_OFFSET] > 1) {
         for (i = ebIEsBytestream[EB_SLOTFRAME_NUMLINK_OFFSET] - 1; i > 0; i--) {
             packetfunctions_reserveHeader(&eb, 5);
-            eb->payload[0] = i;    // slot offset
+            eb->payload[0] = i+LEADER_ID;    // slot offset
             eb->payload[1] = 0x00;
             eb->payload[2] = 0x00; // channel offset
             eb->payload[3] = 0x00;

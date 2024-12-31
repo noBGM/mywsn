@@ -342,6 +342,24 @@
 #endif
 #endif
 
+
+#ifndef SCHEDULE_ROOT
+#define SCHEDULE_ROOT   0
+#endif
+
+#ifndef SCHEDULE_LEADER
+#define SCHEDULE_LEADER   1
+#define SCHEDULE_ENABLE_MOBILE   0
+#endif
+
+#ifndef SCHEDULE_MEMBER
+#define SCHEDULE_MEMBER   0
+#endif
+
+#ifndef SCHEDULE_MOBILE
+#define SCHEDULE_MOBILE   0
+#endif
+
 /**
  * \def IEEE802154E_SINGLE_CHANNEL
  *
@@ -350,7 +368,7 @@
  *
  */
 #ifndef IEEE802154E_SINGLE_CHANNEL
-#define IEEE802154E_SINGLE_CHANNEL      0
+#define IEEE802154E_SINGLE_CHANNEL      0 //11 + SCHEDULE_ROOT + SCHEDULE_LEADER + SCHEDULE_MEMBER + SCHEDULE_MOBILE    
 #endif
 
 /**

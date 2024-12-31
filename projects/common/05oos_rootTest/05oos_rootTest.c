@@ -55,25 +55,18 @@ in order to echo chunks of bytes, each chunk needs to start with character 'H' a
 openserial takes different actions according to the initial character of the stream.
 */
 int mote_main(void) {
-    board_init();
-    scheduler_init();
-    openstack_init();
-    if (idmanager_getMyID(ADDR_64B)->addr_64b[7] == 0x16) {
-        idmanager_setIsDAGroot(TRUE);
-    }
-    scheduler_start();
-
-    //memset(&app_vars,0,sizeof(app_vars_t));
 
     board_init();
     openstack_init();
-    mysf_init(NODE_ROOT);
+    mysf_init();
     //while(1){
     openserial_printf("mote_main\n");
     //  some_delay();
     //}
+    scheduler_start();
     
     return 0;
+
 }
 void some_delay(void) {
    volatile uint16_t delay;
@@ -102,7 +95,7 @@ void iphc_sendDone(OpenQueueEntry_t *msg, owerror_t sendError) {
 
 void iphc_receive(OpenQueueEntry_t *msg) {
     msg->owner = COMPONENT_IPHC;
-    macpong_send(++msg->payload[0]);
+    //macpong_send(++msg->payload[0]);
     openqueue_freePacketBuffer(msg);
 }
 

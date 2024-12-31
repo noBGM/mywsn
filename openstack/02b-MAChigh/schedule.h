@@ -111,7 +111,9 @@ typedef enum {
     CELLTYPE_OFF = 0,
     CELLTYPE_TX = 1,
     CELLTYPE_RX = 2,
-    CELLTYPE_TXRX = 3
+    CELLTYPE_TXRX = 3,
+    CELLTYPE_TX_CMD = 4, //msyf_new_added
+    CELLTYPE_TX_DATA = 5,
 } cellType_t;
 
 typedef struct {
@@ -140,6 +142,7 @@ typedef struct {
     asn_t lastUsedAsn;
     backupEntry_t backupEntries[MAXBACKUPSLOTS];
     void *next;
+    uint8_t memberID;
 } scheduleEntry_t;
 
 BEGIN_PACK
@@ -277,6 +280,8 @@ void schedule_resetBackoff(void);
 void schedule_indicateRx(asn_t *asnTimestamp);
 
 void schedule_indicateTx(asn_t *asnTimestamp, bool succesfullTx);
+
+uint8_t schedule_getMemberID();
 
 // from sixtop
 bool schedule_getOneCellAfterOffset(

@@ -2,24 +2,18 @@
 #include "mysf_schedule.h"
 
 
-void mysf_init(node_role_t role) {
-    switch(role) {
-        case NODE_ROOT:
-            initRootSchedule();
-            break;
-            
-        //case NODE_LEADER:
-        //    initLeaderSchedule();
-        //    break;
-            
-        //case NODE_MEMBER:
-        //    initMemberSchedule();
-        //    break;
-            
-        //case NODE_MOBILE:
-        //    initMobileSchedule();
-        //    break;
-    }
+void mysf_init(void) {
+
+    #if SCHEDULE_ROOT
+        initRootSchedule();
+    #elif SCHEDULE_LEADER
+        initLeaderSchedule();
+    #elif SCHEDULE_MEMBER
+        initMemberSchedule();
+    #elif SCHEDULE_MOBILE
+        initMobileSchedule();
+    #endif
+
 }
 
 // 数据接收回调（被TSCH层调用，上报数据包）
@@ -37,7 +31,7 @@ void schedule_receive_data_callback(OpenQueueEntry_t* msg) {
     // openqueue_freePacketBuffer(msg);
 }
 
-// PC命令接收回调（被串口中断调用�
+// PC命令接收回调（被串口中断调用�
 void schedule_receive_pc_callback(uint8_t* data, uint8_t len) {
     return;
     // if (g_pcCmdHandler != NULL) {

@@ -28,6 +28,7 @@
         "schedule.h": "c",
         "opendefs.h": "c",
         "board_info.h": "c",
-        "ieee802154e.h": "c"
+        "ieee802154e.h": "c",
+        "openqueue.h": "c"
     }
 }

@@ -127,67 +127,71 @@ enum {
 
 // component identifiers, order is important
 enum {
-   COMPONENT_NULL                      = 0x00,
-   COMPONENT_OPENWSN                   = 0x01,
+   COMPONENT_NULL,
+   COMPONENT_OPENWSN,
    //cross-layers
-   COMPONENT_IDMANAGER                 = 0x02,
-   COMPONENT_OPENQUEUE                 = 0x03,
-   COMPONENT_OPENSERIAL                = 0x04,
-   COMPONENT_PACKETFUNCTIONS           = 0x05,
-   COMPONENT_RANDOM                    = 0x06,
+   COMPONENT_IDMANAGER,
+   COMPONENT_OPENQUEUE,
+   COMPONENT_OPENSERIAL,
+   COMPONENT_PACKETFUNCTIONS,
+   COMPONENT_RANDOM,
    //PHY
-   COMPONENT_RADIO                     = 0x07,
+   COMPONENT_RADIO,
    //MAClow
-   COMPONENT_IEEE802154                = 0x08,
-   COMPONENT_IEEE802154E               = 0x09,
+   COMPONENT_IEEE802154,
+   COMPONENT_IEEE802154E,
 
    // all components with higher component id than COMPONENT_IEEE802154E
    // won't be able to get free packets from the queue
    // when the mote is not synch
 
    //MAClow<->MAChigh ("virtual components")
-   COMPONENT_SIXTOP_TO_IEEE802154E     = 0x0a,
-   COMPONENT_IEEE802154E_TO_SIXTOP     = 0x0b,
+   COMPONENT_SIXTOP_TO_IEEE802154E,
+   COMPONENT_IEEE802154E_TO_SIXTOP,
    //MAChigh
-   COMPONENT_SIXTOP                    = 0x0c,
-   COMPONENT_NEIGHBORS                 = 0x0d,
-   COMPONENT_SCHEDULE                  = 0x0e,
-   COMPONENT_SIXTOP_RES                = 0x0f, //response
-   COMPONENT_MSF                       = 0x10,
+   COMPONENT_SIXTOP,
+   COMPONENT_NEIGHBORS,
+   COMPONENT_SCHEDULE,
+   COMPONENT_SIXTOP_RES,
+   COMPONENT_MSF,
+   COMPONENT_MYSF,//ROOT,MEMBER.
+   COMPONENT_LEADER,
+   COMPONENT_LEADER_TO_MEMBER, //mysf_new_added
+   COMPONENT_LEADER_TO_ROOT,
    //IPHC
-   COMPONENT_OPENBRIDGE                = 0x11,
-   COMPONENT_IPHC                      = 0x12,
-   COMPONENT_FRAG                      = 0x13,
+   COMPONENT_OPENBRIDGE,
+   COMPONENT_IPHC,
+   COMPONENT_FRAG,
    //IPv6
-   COMPONENT_FORWARDING                = 0x14,
-   COMPONENT_ICMPv6                    = 0x15,
-   COMPONENT_ICMPv6ECHO                = 0x16,
-   COMPONENT_ICMPv6ROUTER              = 0x17,
-   COMPONENT_ICMPv6RPL                 = 0x18,
+   COMPONENT_FORWARDING,
+   COMPONENT_ICMPv6,
+   COMPONENT_ICMPv6ECHO,
+   COMPONENT_ICMPv6ROUTER,
+   COMPONENT_ICMPv6RPL,
    //TRAN
-   COMPONENT_UDP                       = 0x19,
-   COMPONENT_SOCK_TO_UDP               = 0x1a,
-   COMPONENT_UDP_TO_SOCK               = 0x1b,
-   COMPONENT_OPENCOAP                  = 0x1c,
+   COMPONENT_UDP,
+   COMPONENT_SOCK_TO_UDP,
+   COMPONENT_UDP_TO_SOCK,
+   COMPONENT_OPENCOAP,
    // secure join
-   COMPONENT_CJOIN                     = 0x1d,
-   COMPONENT_OSCORE                    = 0x1e,
+   COMPONENT_CJOIN,
+   COMPONENT_OSCORE,
    // applications
-   COMPONENT_C6T                       = 0x1f,
-   COMPONENT_CEXAMPLE                  = 0x20,
-   COMPONENT_CINFO                     = 0x21,
-   COMPONENT_CLEDS                     = 0x22,
-   COMPONENT_CSENSORS                  = 0x23,
-   COMPONENT_CSTORM                    = 0x24,
-   COMPONENT_CWELLKNOWN                = 0x25,
-   COMPONENT_UECHO                     = 0x26,
-   COMPONENT_UINJECT                   = 0x27,
-   COMPONENT_RRT                       = 0x28,
-   COMPONENT_SECURITY                  = 0x29,
-   COMPONENT_USERIALBRIDGE             = 0x2a,
-   COMPONENT_UEXPIRATION               = 0x2b,
-   COMPONENT_UMONITOR                  = 0x2c,
-   COMPONENT_CINFRARED                 = 0x2d,
+   COMPONENT_C6T,
+   COMPONENT_CEXAMPLE,
+   COMPONENT_CINFO,
+   COMPONENT_CLEDS,
+   COMPONENT_CSENSORS,
+   COMPONENT_CSTORM,
+   COMPONENT_CWELLKNOWN,
+   COMPONENT_UECHO,
+   COMPONENT_UINJECT,
+   COMPONENT_RRT,
+   COMPONENT_SECURITY,
+   COMPONENT_USERIALBRIDGE,
+   COMPONENT_UEXPIRATION,
+   COMPONENT_UMONITOR,
+   COMPONENT_CINFRARED,
 };
 
 /**

@@ -1,6 +1,10 @@
-// schedule_manager.c
+
 #include "mysf_schedule.h"
 
+static uint8_t memberData[MAX_GROUP_MEMBERS][MAX_DATA_LEN];  // 数据存储数组
+static uint32_t memberBitmap = 0;  // 传输状态位图
+static uint8_t numGroupMembers = 0;  // 组内节点数量
+static bool okToSend = FALSE;
 
 // IMU数据包类型定义
 typedef enum {
@@ -13,9 +17,62 @@ typedef enum {
     ROOT_MSG_COMMAND            // 控制命令
 } leader_data_type_t;
 
+void mysf_setOkToSend(bool status){
+    okToSend = status;
+}
 
+bool mysf_getOkToSend(void){
+    if(schedule_getType() == CELLTYPE_TX_CMD)
+        return TRUE;
+    return okToSend;
+}
+
+// 处理组员数据流
+// return: 是否所有组员在本周期内都完成传输
+bool storeMemberData(uint8_t memberId, uint8_t* data, uint8_t len) {
+    INTERRUPT_DECLARATION();
+    DISABLE_INTERRUPTS();
+    
+    // 获取组员在组内的索引
+    uint8_t memberIndex = GET_NODE_INDEX(memberId);
+    
+    // 检查参数有效性
+    if (memberIndex >= MAX_GROUP_MEMBERS || len > MAX_DATA_LEN) {
+        ENABLE_INTERRUPTS();
+        return FALSE;
+    }
+    
+    // 存储数据
+    memcpy(memberData[memberIndex], data, len);
+    
+    // 更新bitmap
+    memberBitmap |= (1 << memberIndex);
+    
+    // 检查是否所有组员都完成传输
+    uint32_t expectedBitmap = (1 << numGroupMembers) - 1;
+    bool allComplete = (memberBitmap == expectedBitmap);
+    
+    // 如果全部完成，清零bitmap
+    if (allComplete) {
+        memberBitmap = 0;
+        //后续需考虑减少memcpy的次数，测试阶段暂略。
+        sendToRoot(memberData, numGroupMembers*MAX_DATA_LEN, PRIORITY_HIGH);
+    }else{
+        //如果组员数据始终未完成，应做何处理？
+        //1. 是否需要立即发送？
+        //2. 是否需要等待所有组员完成，再发送？
+    }
+    
+    
+    ENABLE_INTERRUPTS();
+    return allComplete;
+}
 
 // 组长节点的数据处理函数
+// root：RX时隙接收到根节点的数据;
+// member：RX时隙接收到组内节点的数据;
+// 同步调用。
+
 static void leaderDataHandler(uint16_t srcAddr, uint8_t* data, uint8_t len) {
     uint8_t nodeType = GET_NODE_TYPE(srcAddr);  // 从源地址判断是固定节点还是移动节点
     leader_data_type_t dataType = (leader_data_type_t)data[0];
@@ -91,6 +148,9 @@ static void leaderDataHandler(uint16_t srcAddr, uint8_t* data, uint8_t len) {
     // 更新节点状态记录
     updateNodeStatus(srcAddr, dataType);
 }
+static void updateMobileSlots(){
+    return;
+}
 // 处理新的调度表 
 static void handleScheduleUpdate(uint8_t* data, uint8_t len) {
     // 1. 更新本地调度表（即组长节点与根节点的通信、与组内节点的通信）
@@ -99,54 +159,6 @@ static void handleScheduleUpdate(uint8_t* data, uint8_t len) {
     // 2. 更新移动节点的时隙分配
     updateMobileSlots();
     
-    // 3. 广播更新给组内节点
-    broadcastScheduleUpdate();
-}
-
-void broadcastScheduleUpdate(void) {
-    OpenQueueEntry_t* pkt;
-    uint8_t slotsPerMember;
-    uint8_t totalSlots;
-    uint8_t* payload;
-    
-    // 获取空闲数据包缓冲
-    pkt = openqueue_getFreePacketBuffer(COMPONENT_SCHEDULE);
-    if(pkt == NULL) {
-        LOG_ERROR(COMPONENT_SCHEDULE, ERR_NO_FREE_PACKET_BUFFER, 
-                 (errorparameter_t)0, (errorparameter_t)0);
-        return;
-    }
-    
-    // 设置包属性
-    pkt->creator = COMPONENT_SCHEDULE;
-    pkt->owner = COMPONENT_SCHEDULE;
-    pkt->l2_frameType = IEEE154_TYPE_DATA;
-    
-    // 计算时隙分配
-    slotsPerMember = SLOTS_PER_MEMBER;  // 每个组员分配的时隙数
-    totalSlots = NUM_GROUP_MEMBERS * slotsPerMember;  // 总时隙数
-    
-    // 分配payload空间: 1字节(N) + totalSlots字节
-    packetfunctions_reserveHeaderSize(pkt, 1 + totalSlots);
-    payload = pkt->payload;
-    
-    // 设置第一个字节为每个组员的时隙数
-    payload[0] = slotsPerMember;
-    
-    // 填充时隙资源
-    // 这里假设时隙资源已经在schedule_vars.slotResources中准备好
-    memcpy(&payload[1], schedule_vars.slotResources, totalSlots);
-    
-    // 设置广播地址
-    packetfunctions_setAddress(&(pkt->l2_nextORpreviousHop),
-                              ADDR_BROADCAST,
-                              NULL);
-    
-    // 发送数据包
-    if(sixtop_send(pkt) != E_SUCCESS) {
-        openqueue_freePacketBuffer(pkt);
-        return;
-    }
 }
 
 // 处理配置更新
@@ -183,37 +195,55 @@ static void handleRootCommand(uint8_t* data, uint8_t len) {
 
 
 // 发送数据到根节点
+// 应该创建一个类似于sixtop_send的函数，包含了owner修改（不同于sixtop_send）、协议头准备。
 static void sendToRoot(uint8_t* data, uint8_t len, uint8_t priority) {
     OpenQueueEntry_t* pkt;
     
     // 获取发送缓冲
-    pkt = openqueue_getFreePacketBuffer(COMPONENT_SCHEDULE);
+    pkt = openqueue_getFreePacketBuffer(COMPONENT_LEADER);
+
     if (pkt == NULL) {
-        // 缓冲区满，记录错误
-        logError(ERR_BUFFER_FULL);
+        LOG_ERROR(COMPONENT_IEEE802154E, ERR_NO_FREE_PACKET_BUFFER, (errorparameter_t) 0, (errorparameter_t) 0);
+        // abort
         return;
     }
-    
-    // 填充数据
+
+    if (packetfunctions_reserveHeader(&pkt, len) == E_FAIL){
+        return E_FAIL;
+    }
+
     memcpy(pkt->payload, data, len);
     pkt->length = len;
-    
-    // 设置目标地址为根节点
     pkt->l2_nextORpreviousHop = ROOT_ID;
-    
-    // 设置优先级
-    pkt->priority = priority;
-    
-    // 发送数据
-    if (schedule_sendPacket(pkt) != E_SUCCESS) {
-        // 发送失败，释放缓冲
-        openqueue_freePacketBuffer(pkt);
-        logError(ERR_SEND_FAILED);
+    pkt->priority = priority;//需删除
+
+    pkt->owner = COMPONENT_LEADER;
+    pkt->l2_frameType = IEEE154_TYPE_DATA;
+
+    // set l2-security attributes
+    pkt->l2_securityLevel = IEEE802154_security_getSecurityLevel(pkt);//影响是否执行isValidJoin
+    pkt->l2_keyIdMode = IEEE802154_SECURITY_KEYIDMODE;
+    pkt->l2_keyIndex = IEEE802154_security_getDataKeyIndex();    
+    pkt->l2_retriesLeft = 1;
+    pkt->l2_dsn = 0;
+    pkt->l2_numTxAttempts = 0;
+    // add a IEEE802.15.4 header
+    if (ieee802154_prependHeader(
+            pkt,
+            pkt->l2_frameType,
+            FALSE, //IE present?
+            pkt->l2_dsn,
+            &(pkt->l2_nextORpreviousHop)
+    ) == E_FAIL) {
+        return E_FAIL;
     }
+    // change owner to IEEE802154E fetches it from queue
+    pkt->owner = COMPONENT_LEADER_TO_ROOT;
 }
 
 static void updateLocalSchedule(uint8_t* data, uint8_t len) {
     schedule_update_t* update = (schedule_update_t*)data;
+    OpenQueueEntry_t* pkt;
     
     // 1. 版本检查
     if (update->version <= currentScheduleVersion) {
@@ -232,7 +262,8 @@ static void updateLocalSchedule(uint8_t* data, uint8_t len) {
         ENABLE_INTERRUPTS();
         return;
     }
-    
+
+    pkt = openqueue_getFreePacketBuffer(COMPONENT_LEADER_TO_MEMBER);
     // 4. 为组内每个固定节点计算具体时隙分配
     for (uint8_t i = 0; i < myGroupResource.numNodes; i++) {
         uint16_t nodeId = getGroupMemberId(i);  // 获取组内第i个节点的ID
@@ -243,15 +274,20 @@ static void updateLocalSchedule(uint8_t* data, uint8_t len) {
             myGroupResource.startSlot,
             myGroupResource.slotsPerNode
         );
+
+        uint8_t channelOffset = calculateNodeSlot(
+            nodeId, 
+            myGroupResource.startSlot,
+            myGroupResource.slotsPerNode
+        );        
         
-        // 在组长节点注册接收时隙
-        schedule_addActiveSlot(
-            slotOffset,
-            myGroupResource.channelOffset,
-            CELLTYPE_RX,           // 组长接收组员数据
-            nodeId,                // 对应组员节点ID
-            FALSE                  // 非共享时隙
-        );
+        pkt->payload[0+nodeId*2] = slotOffset;
+        pkt->payload[1+nodeId*2] = channelOffset;
+        //pkt->payload[2] = nodeId;
+        pkt->length = myGroupResource.numNodes*2;
+        pkt->creator = COMPONENT_LEADER;
+        pkt->owner = COMPONENT_LEADER;
+        pkt->l2_frameType = IEEE154_TYPE_DATA;
     }
     
     // 5. 处理移动节点的资源分配（如果有）
@@ -269,7 +305,7 @@ static void updateLocalSchedule(uint8_t* data, uint8_t len) {
     ENABLE_INTERRUPTS();
     
     // 7. 广播新的资源分配给组内节点
-    broadcastResourceUpdate(&myGroupResource);
+    // 异步执行。
 }
 
 // 解析分配给本组的资源块
@@ -303,37 +339,72 @@ static void registerMobileSlots(uint8_t startSlot, uint8_t numSlots, uint8_t cha
         schedule_addActiveSlot(
             startSlot + i,
             channelOffset,
-            CELLTYPE_RX,          // 接收移动节点数据
+            CELLTYPE_RX,           // 接收移动节点数据
             MOBILE_BROADCAST_ID,   // 移动节点广播ID
             TRUE                   // 共享时隙
         );
     }
 }
 
-// 广播资源更新给组内节点
-static void broadcastResourceUpdate(group_resource_t* resource) {
-    // 准备广播包
-    uint8_t broadcastData[MAX_PACKET_LEN];
-    uint8_t len = 0;
+
+
+static void initLinks(void){
+    uint16_t rootID = 0x0000;
+    uint8_t thisGroup = 0;//宏决定，还未修改。
+    open_addr_t temp_neighbor;
+    memset(&temp_neighbor, 0, sizeof(temp_neighbor));
+    temp_neighbor.type = ADDR_ANYCAST;
+    //用于组内的资源广播。
+    schedule_addActiveSlot(
+        SCHEDULE_MINIMAL_6TISCH_SLOTOFFSET+1+LEADER_ID,    
+        CELLTYPE_TX_CMD, 
+        FALSE,          
+        FALSE,         
+        SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET, 
+        &temp_neighbor
+    );
+
+    schedule_addActiveSlot(
+        ROOT_LEADER_LINKS[thisGroup].slotOffset,
+        CELLTYPE_TX,                     // 接收时隙
+        FALSE,                           // 非共享时隙
+        FALSE,                           // 自主调度
+        ROOT_LEADER_LINKS[thisGroup].channelOffset,
+        rootID
+    );
     
-    // 填充资源信息
-    broadcastData[len++] = RESOURCE_UPDATE_TYPE;
-    memcpy(&broadcastData[len], resource, sizeof(group_resource_t));
-    len += sizeof(group_resource_t);
+    schedule_addActiveSlot(
+        ROOT_LEADER_LINKS[thisGroup].slotOffset + NUM_GROUPS,// 错开接收时隙
+        CELLTYPE_RX,                     // 发送时隙
+        FALSE,                           // 非共享时隙
+        FALSE,                           // 自主调度
+        ROOT_LEADER_LINKS[thisGroup].channelOffset,
+        rootID
+    );
     
-    // 广播给组内所有节点
-    sendGroupBroadcast(broadcastData, len);
 }
+
+static void registerBorrowHandler(void){
+    return;
+}
+
+static void initMobileSlotPool(void){
+    return;
+}
+static void startStatusReport(void){
+    return;
+}
+
 
 // -------- 组长节点相关功能 --------
 static void initLeaderSchedule(void) {
     // 初始化与根节点的固定通信时隙
-    initRootLink();
+    initLinks();
     
     waitForRootBeacon();
 
     // 获取本组资源配置
-    while(getGroupResource());
+    while(!getGroupResource());
 
     // 初始化组内固定节点的预设时隙（尽量保证均匀分布，避免高密度采样导致相邻动作突变）
     // member0: 0, 3, 6, 9

@@ -722,11 +722,11 @@ bool schedule_isNumTxWrapped(open_addr_t *neighbor) {
         }
     }
     ENABLE_INTERRUPTS();
-    return returnVal;
+    return returnVal;pen
 
 }
 
-bool schedule_getCellsToBeRelocated(open_addr_t *neighbor, cellInfo_ht *celllist) {
+bool schedule_getCellsToBeRelocated(o_addr_t *neighbor, cellInfo_ht *celllist) {
     uint8_t i;
 
     uint16_t cellPDR;
@@ -935,6 +935,15 @@ slotOffset_t schedule_getNextActiveSlotOffset(void) {
 
     ENABLE_INTERRUPTS();
 
+    return res;
+}
+
+uint8_t schedule_getMemberID(void){
+    uint8_t res;
+    INTERRUPT_DECLARATION();
+    DISABLE_INTERRUPTS();
+    res = schedule_vars.currentScheduleEntry->memberID;
+    ENABLE_INTERRUPTS();
     return res;
 }
 

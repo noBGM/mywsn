@@ -1,3 +1,6 @@
+#include "mysf_schedule.h"
+
+
 static void waitForLeaderBeacon(void) {
 
     while(){
@@ -30,9 +33,9 @@ typedef struct {
 static group_resource_t myGroupResource;
 static uint16_t myLeaderId;
 
-// 共享时隙配置
-#define SHARED_SLOT_OFFSET    0x00    // 共享时隙偏移量
-#define SHARED_CHANNEL_OFFSET 0x00    // 共享信道偏移量
+// 接收组长广播时隙配置，应该来自于EB配置。
+#define LEADER_BROADCAST_SLOT_OFFSET    0x00    // 共享时隙偏移量
+#define LEADER_BROADCAST_CHANNEL_OFFSET 0x00    // 共享信道偏移量
 
 static uint16_t currentLeaderId;  // 当前组长ID
 static bool receivedSchedule;     // 是否收到调度表标志
@@ -48,13 +51,13 @@ static void initMemberSchedule(void) {
     leaderAddr.type = ADDR_64B;
     getLeaderAddr(currentLeaderId, &leaderAddr);
     
-    // 添加共享接收时隙
+    // 添加接收时隙
     schedule_addActiveSlot(
-        SHARED_SLOT_OFFSET,        // 时隙偏移
+        LEADER_BROADCAST_SLOT_OFFSET,        // 时隙偏移
         CELLTYPE_RX,              // 接收类型
-        TRUE,                     // 共享时隙
-        TRUE,                     // 自动时隙
-        SHARED_CHANNEL_OFFSET,    // 信道偏移
+        FALSE,                     // 共享时隙
+        FALSE,                     // 自动时隙
+        LEADER_BROADCAST_CHANNEL_OFFSET,    // 信道偏移
         &leaderAddr              // 组长地址
     );
     

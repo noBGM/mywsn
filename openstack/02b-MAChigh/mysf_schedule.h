@@ -1,8 +1,16 @@
 // schedule_manager.h
 #include "schedule.h"
+#include "openqueue.h"
+#include "opendefs.h"
+#include "IEEE802154_security.h"
 
+
+
+#define LEADER_ID 0x0001
 #define NUM_GROUPS 4
 #define MAX_PC_PACKET_LEN 255
+#define MAX_GROUP_MEMBERS 10
+#define MAX_DATA_LEN 100
 // 组内资源分配规则
 typedef struct {
     uint8_t startSlot;      // 本组起始时隙
@@ -42,5 +50,14 @@ static const group_resource_t GROUP_RESOURCES[] = {
     // 下肢组 (16个节点)
     {.startSlot = 29, .totalSlots = 8, .nodesPerSlot = 2, .channelOffset = 3}
 };
-
-void mysf_init(node_role_t role);
+// 根节点与组长的固定链路配�
+static const root_leader_link_t ROOT_LEADER_LINKS[] = {
+    {.leaderId = 0x0001, .slotOffset = 1, .channelOffset = 0},  // 头颈组长
+    {.leaderId = 0x0002, .slotOffset = 2, .channelOffset = 0},  // 躯干组长
+    {.leaderId = 0x0003, .slotOffset = 3, .channelOffset = 0},  // 上肢组长
+    {.leaderId = 0x0004, .slotOffset = 4, .channelOffset = 0}   // 下肢组长
+};
+void mysf_init(void);
+bool storeMemberData(uint8_t memberId, uint8_t* data, uint8_t len);
+void mysf_setOkToSend(bool status);
+bool mysf_getOkToSend(void);

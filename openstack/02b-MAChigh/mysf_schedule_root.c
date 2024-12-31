@@ -10,13 +10,6 @@ data_handler_t g_dataHandler = NULL;
 pc_cmd_handler_t g_pcCmdHandler = NULL;
 // -------- 根节点相关功�-------
 
-// 根节点与组长的固定链路配�
-static const root_leader_link_t ROOT_LEADER_LINKS[] = {
-    {.leaderId = 0x0001, .slotOffset = 1, .channelOffset = 0},  // 头颈组长
-    {.leaderId = 0x0002, .slotOffset = 2, .channelOffset = 0},  // 躯干组长
-    {.leaderId = 0x0003, .slotOffset = 3, .channelOffset = 0},  // 上肢组长
-    {.leaderId = 0x0004, .slotOffset = 4, .channelOffset = 0}   // 下肢组长
-};
 // 注册数据处理函数
 static void registerDataHandler(data_handler_t handler) {
     INTERRUPT_DECLARATION();
@@ -138,7 +131,7 @@ static void handlePCCommand(uint8_t* data, uint8_t len) {
 void initRootSchedule(void) {
     // 1. 初始化与PC的串口通信�
     //initPCConnection();
-
+    
     // 2. 初始化与各组长的固定通信时隙
     for(uint8_t i = 0; i < NUM_GROUPS; i++) {
         // 为每个组长添加接收时隙（接收来自组长的数据）
